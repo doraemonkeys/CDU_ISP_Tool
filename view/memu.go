@@ -6,11 +6,11 @@ import (
 )
 
 func Menu() {
-	fmt.Println("**************************************************************")
-	fmt.Println("              成都大学ISP健康打卡小工具                 		 ")
-	fmt.Println("                                                              ")
-	fmt.Println("    更新地址:https://github.com/Doraemonkeys/circularQueue     ")
-	fmt.Println("**************************************************************")
+	fmt.Println("************************************************************************")
+	fmt.Println("                    成都大学ISP健康打卡小工具                 	           ")
+	fmt.Println("                                                                        ")
+	fmt.Println("    更新地址:https://github.com/Doraemonkeys/CDU_ISP_Tool/releases       ")
+	fmt.Println("************************************************************************")
 }
 
 func Warn() {
