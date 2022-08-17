@@ -11,7 +11,7 @@
 
     下载链接：[Releases · Doraemonkeys/CDU_ISP_Tool (github.com)](https://github.com/Doraemonkeys/CDU_ISP_Tool/releases)
 
-   
+   ![image-20220818030759502](E:\Doraemon\Pictures\Typora\image-20220818030759502.png)
 
 2. **解压**到自己熟悉的文件夹
 
