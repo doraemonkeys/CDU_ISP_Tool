@@ -25,7 +25,9 @@ func main() {
 	for ok {
 		newClient, err := util.Get_client()
 		if err != nil {
-			panic(err)
+			log.Println("创建虚拟客户端失败！", err)
+			time.Sleep(time.Hour / 2)
+			continue
 		}
 		users, err := config.GetUserInfos()
 		if err != nil {
