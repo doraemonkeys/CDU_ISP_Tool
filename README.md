@@ -14,11 +14,11 @@
 
 ## 使用方法
 
-1. 下载压缩包
+1. 选择最新版本，下载压缩包
 
     下载链接：[Releases · CDU_ISP_Tool](https://github.com/Doraemonkeys/CDU_ISP_Tool/releases)
 
-   ![image-20220818030759502](https://raw.githubusercontent.com/Doraemonkeys/picture/master/image-20220818030759502.png)
+   ![](E:\Doraemon\Pictures\Typora\屏幕截图 2022-08-18 030702.png)
 
 2. **解压**到自己熟悉的文件夹
 
