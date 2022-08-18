@@ -65,7 +65,8 @@ func Get_IP_Loaction() (model.Location, error) {
 	if err != nil {
 		return model.Location{}, err
 	}
-	fmt.Println("你的公网IPv4:", ip)
+	fmt.Println("获取到公网IPv4:", ip)
+	log.Println("获取到公网IPv4:", ip)
 	queryData.Set("ip", ip)
 	queryData.Set("action", "2")
 	u.RawQuery = queryData.Encode() // URL encode
@@ -169,6 +170,8 @@ func GetLocation(user_no string, client *http.Client) (model.Location, error) {
 	} else {
 		fmt.Println("历史健康登记打卡地址：",
 			isp_location_history.Province, isp_location_history.City, isp_location_history.Area)
+		log.Println("历史健康登记打卡地址：",
+			isp_location_history.Province, isp_location_history.City, isp_location_history.Area)
 	}
 	IP_Loaction, err2 := Get_IP_Loaction()
 	if err2 != nil {
@@ -176,6 +179,8 @@ func GetLocation(user_no string, client *http.Client) (model.Location, error) {
 		fmt.Println("获取ip地址信息失败！")
 	} else {
 		fmt.Println("当前ip地址：",
+			IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
+		log.Println("当前ip地址：",
 			IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
 	}
 	if err1 != nil && err2 != nil {

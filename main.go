@@ -37,16 +37,14 @@ func main() {
 		errConut := 0 //只通知一次
 		for _, user := range users {
 			err := engine.Run(newClient, user)
-			if err != nil {
-				if err.Error() != "健康登记打卡已存在" {
-					fmt.Println()
-					fmt.Println()
-					log.Println("健康登记打卡失败,Error:", err)
-					view.Clock_IN_Failed(user)
-					fmt.Println()
-					fmt.Println()
-					errConut++
-				}
+			if err != nil && err.Error() != "健康登记打卡已存在" {
+				fmt.Println()
+				fmt.Println()
+				log.Println("健康登记打卡失败,Error:", err)
+				view.Clock_IN_Failed(user)
+				fmt.Println()
+				fmt.Println()
+				errConut++
 			} else {
 				fmt.Println()
 				fmt.Println()

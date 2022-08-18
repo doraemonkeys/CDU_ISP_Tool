@@ -144,23 +144,25 @@ func PressToContinue(ch chan bool) {
 	close(ch)
 }
 
+//不等待执行完毕就返回
 //如果params中有转义字符需要自己处理
 //dir为cmd命令执行的位置,传入空值则为默认路径
-func Cmd(dir string, params []string) (string, error) {
+func Cmd_NoWait(dir string, params []string) (string, error) {
 	cmd := exec.Command("cmd")
 	cmd_in := bytes.NewBuffer(nil)
 	cmd.Stdin = cmd_in
 	cmd_out := bytes.NewBuffer(nil)
 	cmd.Stdout = cmd_out
-	if dir != "" {
-		cmd.Dir = dir
-	}
+	cmd.Dir = dir
 	command := ""
-	for _, v := range params {
-		command += v
+	for i := 0; i < len(params); i++ {
+		command = command + params[i]
+		if i != len(params)-1 {
+			command += " "
+		}
 	}
 	cmd_in.WriteString(command + "\n")
-	err := cmd.Run()
+	err := cmd.Start() //不等待执行完毕就返回
 	if err != nil {
 		return "", err
 	}

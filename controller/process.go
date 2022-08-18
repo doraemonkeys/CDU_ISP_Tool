@@ -45,7 +45,6 @@ func endProcess(ch chan string) {
 		input = strings.TrimSpace(input)
 		input = strings.ToUpper(input)
 		ch <- input
-		case5Count := 3 //case 5限制最多执行3次
 		switch input {
 		case "0":
 			err := config.DeleteUser()
@@ -86,12 +85,6 @@ func endProcess(ch chan string) {
 				model.UserConfigChanged = true
 			}
 		case "5":
-			if case5Count == 0 {
-				fmt.Println("设置更改次数过多,请重启电脑保证程序正确运行！")
-				log.Println("设置更改次数过多,请重启电脑保证程序正确运行！")
-				break
-			}
-			case5Count--
 			fmt.Println()
 			fmt.Println(">>>>>如果设置失败，请关闭杀毒软件并以管理员权限重新运行<<<<<")
 			fmt.Println()
@@ -111,9 +104,13 @@ func endProcess(ch chan string) {
 					log.Println("开启自启动失败！")
 					fmt.Println("开启自启动失败！")
 				} else {
-					fmt.Println("开启自启动成功！")
+					fmt.Println()
+					fmt.Println("开启自启动成功！ 程序退出.....")
 					log.Println("开启自启动成功！")
-					model.Auto_Start = true
+					//model.Auto_Start = true
+					//这里不设置为true是因为会启动一个新进程，当前进程默认退出
+					//time.Sleep(time.Second / 2)
+					os.Exit(0)
 				}
 			}
 			fmt.Println()
