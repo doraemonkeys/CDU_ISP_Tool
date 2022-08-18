@@ -83,6 +83,14 @@ func main() {
 		fmt.Println()
 		view.EndSlect()
 		ok = controller.ProcessEndInput()
+		if !ok && model.Auto_Start {
+			sleepTime := time.Now().Format("2006/01/02")
+			for sleepTime == time.Now().Format("2006/01/02") {
+				log.Println("程序休眠一小时")
+				time.Sleep(time.Hour)
+			}
+			ok = true //第二天到了
+		}
 	}
 }
 
