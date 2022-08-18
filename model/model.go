@@ -18,6 +18,9 @@ var Auto_Start bool = false
 //程序启动前今天的打卡已经完成
 var Auto_Clock_IN_Success bool = false
 
+//用户是否使用本程序修改了用户账号配置
+var UserConfigChanged bool = false
+
 type UserInfo struct {
 	UserName  string
 	UserID    string

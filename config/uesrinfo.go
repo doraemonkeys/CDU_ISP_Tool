@@ -230,6 +230,22 @@ func SetAutoStart() error {
 		log.Println("写入自启动配置文件失败！", err)
 		return err
 	}
+	err = StartNewProgram()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//用户设置自启动后会关闭当前程序，所以要开一个新的进程，
+//应当确保在设置自启动后调用。
+func StartNewProgram() error {
+	_, err := util.Cmd(`C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup`,
+		[]string{".\\isp_auto_start.vbs"})
+	if err != nil {
+		log.Println("打开新的程序失败！", err)
+		return err
+	}
 	return nil
 }
 

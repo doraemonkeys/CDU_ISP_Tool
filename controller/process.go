@@ -22,6 +22,7 @@ func ProcessEndInput() bool {
 	ch := make(chan string)
 	go endProcess(ch)
 	var input string
+	//2分钟无操作返回false,如果没有设置自启动,程序会退出。
 	for time.Since(start) < time.Minute*2 {
 		select {
 		case input = <-ch:
@@ -44,6 +45,7 @@ func endProcess(ch chan string) {
 		input = strings.TrimSpace(input)
 		input = strings.ToUpper(input)
 		ch <- input
+		case5Count := 3 //case 5限制最多执行3次
 		switch input {
 		case "0":
 			err := config.DeleteUser()
@@ -52,6 +54,7 @@ func endProcess(ch chan string) {
 				fmt.Println("删除失败！", err)
 			} else {
 				fmt.Println("删除成功！")
+				model.UserConfigChanged = true
 			}
 		case "1":
 			err := config.ModifyUserInfos()
@@ -63,8 +66,10 @@ func endProcess(ch chan string) {
 				fmt.Println("修改密码失败！", err)
 			} else {
 				fmt.Println("修改密码成功！")
+				model.UserConfigChanged = true
 			}
 		case "2":
+			model.UserConfigChanged = true
 			err := config.AddUser()
 			if err != nil {
 				fmt.Println("添加用户失败!")
@@ -78,8 +83,15 @@ func endProcess(ch chan string) {
 				fmt.Println("请自己删除配置文件。")
 			} else {
 				fmt.Println("清空成功！")
+				model.UserConfigChanged = true
 			}
 		case "5":
+			if case5Count == 0 {
+				fmt.Println("设置更改次数过多,请重启电脑保证程序正确运行！")
+				log.Println("设置更改次数过多,请重启电脑保证程序正确运行！")
+				break
+			}
+			case5Count--
 			fmt.Println()
 			fmt.Println(">>>>>如果设置失败，请关闭杀毒软件并以管理员权限重新运行<<<<<")
 			fmt.Println()
@@ -122,7 +134,7 @@ func InitConfig() error {
 			view.Auto_Clock_IN_Success()
 			fmt.Println()
 			startTime := time.Now()
-			fmt.Printf("按Enter键继续......")
+			fmt.Printf("按Enter键继续执行程序......")
 			ch := make(chan bool, 1)
 			go util.PressToContinue(ch)
 			ok := false
@@ -210,10 +222,11 @@ func InitConfig() error {
 	}
 	fmt.Println()
 	fmt.Println()
+	model.UserConfigChanged = true
 	return nil
 }
 
-//是否设置为自启动
+//是否已经设置为自启动
 func CheckAutoStart() bool {
 	autoStart, err := os.Open("./auto_start.config")
 	if err != nil {

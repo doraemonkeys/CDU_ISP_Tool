@@ -11,6 +11,9 @@ import (
 )
 
 func Run(client http.Client, user model.UserInfo) error {
+	if !model.UserConfigChanged && model.Auto_Start && model.Auto_Clock_IN_Success {
+		return nil
+	}
 	err := login.LoginISP(&client, user)
 	if err != nil {
 		fmt.Println("ID", user.UserID, "登录失败！")

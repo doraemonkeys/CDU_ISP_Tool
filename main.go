@@ -21,6 +21,7 @@ func main() {
 	if err != nil {
 		fmt.Println("配置文件初始化失败！")
 	}
+	//ok表示是否继续循环
 	ok := true
 	for ok {
 		newClient, err := util.Get_client()
@@ -55,6 +56,8 @@ func main() {
 				fmt.Println()
 			}
 		}
+		//不管打卡成功或者失败，循环一次后都认为配置文件已经执行过一次,用户没有再次修改
+		model.UserConfigChanged = false
 		if errConut != 0 {
 			fmt.Println("打卡失败数量：", errConut)
 			log.Println("打卡失败数量：", errConut)
@@ -62,6 +65,7 @@ func main() {
 				if !model.Auto_Clock_IN_Success {
 					runningLog.Inform("健康登记打卡 失败！！！" + " 请手动打卡。")
 					controller.WrittenToTheLog(time.Now().Format("2006/01/02") + " 自动打卡失败")
+					model.Auto_Clock_IN_Success = false
 				}
 			} else {
 				runningLog.Inform("健康登记打卡 失败！！！" + " 请手动打卡。")
@@ -72,6 +76,7 @@ func main() {
 				if !model.Auto_Clock_IN_Success {
 					runningLog.Inform("健康登记打卡 成功！")
 					controller.WrittenToTheLog(time.Now().Format("2006/01/02") + " 自动打卡成功")
+					model.Auto_Clock_IN_Success = true
 				}
 			} else {
 				runningLog.Inform("健康登记打卡 成功！")
@@ -90,8 +95,17 @@ func main() {
 			for sleepTime == time.Now().Format("2006/01/02") {
 				log.Println("程序休眠一小时")
 				time.Sleep(time.Hour)
+				//如果自动打卡没有成功，休眠一小时后再次尝试打卡
+				if !model.Auto_Clock_IN_Success {
+					log.Println("发现上次自动打卡没有成功，再次尝试。")
+					break
+				}
 			}
-			ok = true //第二天到了
+			ok = true //第二天到了,尝试继续打卡
+		}
+		//检查自动打卡是否已经取消
+		if !controller.CheckAutoStart() {
+			ok = false
 		}
 	}
 }

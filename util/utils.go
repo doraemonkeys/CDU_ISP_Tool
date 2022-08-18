@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +19,8 @@ import (
 	"golang.org/x/net/html/charset"
 	"golang.org/x/net/publicsuffix"
 	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 //自动检测html编码,不会减少缓冲器的内容
@@ -139,4 +142,37 @@ func PressToContinue(ch chan bool) {
 	fmt.Scanf("\n")
 	ch <- true
 	close(ch)
+}
+
+//如果params中有转义字符需要自己处理
+//dir为cmd命令执行的位置,传入空值则为默认路径
+func Cmd(dir string, params []string) (string, error) {
+	cmd := exec.Command("cmd")
+	cmd_in := bytes.NewBuffer(nil)
+	cmd.Stdin = cmd_in
+	cmd_out := bytes.NewBuffer(nil)
+	cmd.Stdout = cmd_out
+	if dir != "" {
+		cmd.Dir = dir
+	}
+	command := ""
+	for _, v := range params {
+		command += v
+	}
+	cmd_in.WriteString(command + "\n")
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+	output := cmd_out.Bytes()
+	return string(GbkToUtf8(output)), nil
+}
+
+func GbkToUtf8(b []byte) []byte {
+	tfr := transform.NewReader(bytes.NewReader(b), simplifiedchinese.GBK.NewDecoder())
+	d, e := ioutil.ReadAll(tfr)
+	if e != nil {
+		return nil
+	}
+	return d
 }
