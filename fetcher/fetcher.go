@@ -70,9 +70,13 @@ func Get_IP_Loaction() (model.Location, error) {
 	queryData.Set("action", "2")
 	u.RawQuery = queryData.Encode() // URL encode
 	req, _ := http.NewRequest("GET", u.String(), nil)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36")
-	resp, _ := client.Do(req)
-
+	req.Header.Set("User-Agent", model.UserAgent)
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("访问ip138.com失败！, err:%v\n", err)
+		log.Printf("访问ip138.com失败！, err:%v\n", err)
+		return model.Location{}, err
+	}
 	bodyReader := bufio.NewReader(resp.Body)
 	//自动检测html编码
 	e, err := util.DetermineEncodingbyPeek(bodyReader)
@@ -93,6 +97,11 @@ func Get_IP_Loaction() (model.Location, error) {
 	re := regexp.MustCompile(model.Ip_locationRe)
 	match := re.FindSubmatch(content)
 	if match == nil {
+		log.Println("匹配IP地址信息失败！请联系开发者。")
+		fmt.Println("匹配IP地址信息失败！请联系开发者。")
+		return model.Location{}, errors.New("match == nil")
+	}
+	if len(match) != 5 {
 		log.Println("匹配IP地址信息失败！请联系开发者。")
 		fmt.Println("匹配IP地址信息失败！请联系开发者。")
 		return model.Location{}, errors.New("match == nil")
@@ -150,4 +159,36 @@ func Get_isp_location_history(user_no string, client *http.Client) (model.Locati
 	newLocation.City = string(match[2])
 	newLocation.Area = string(match[3])
 	return newLocation, nil
+}
+
+func GetLocation(user_no string, client *http.Client) (model.Location, error) {
+	isp_location_history, err1 := Get_isp_location_history(user_no, client)
+	if err1 != nil {
+		log.Println("获取isp历史打卡信息失败！")
+		fmt.Println("获取isp历史打卡信息失败！")
+	} else {
+		fmt.Println("历史健康登记打卡地址：",
+			isp_location_history.Province, isp_location_history.City, isp_location_history.Area)
+	}
+	IP_Loaction, err2 := Get_IP_Loaction()
+	if err2 != nil {
+		log.Println("获取ip地址信息失败！")
+		fmt.Println("获取ip地址信息失败！")
+	} else {
+		fmt.Println("当前ip地址：",
+			IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
+	}
+	if err1 != nil && err2 != nil {
+		log.Println("获取地址信息失败,无法打开！")
+		fmt.Println("获取地址信息失败,无法打开！")
+		return model.Location{}, errors.New(err1.Error() + err2.Error())
+	}
+	if err2 == nil {
+		fmt.Println("默认使用ip地址信息打卡，如果有错误请前往ISP手动修改！")
+		log.Println("默认使用ip地址信息打卡，如果有错误请前往ISP手动修改！")
+		return IP_Loaction, nil
+	}
+	fmt.Println("使用ISP历史登记信息打卡，如果有错误请前往ISP手动修改！")
+	log.Println("使用ISP历史登记信息打卡，如果有错误请前往ISP手动修改！")
+	return isp_location_history, nil
 }

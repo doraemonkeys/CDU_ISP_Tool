@@ -4,16 +4,19 @@ import (
 	"ISP_Tool/config"
 	"ISP_Tool/controller"
 	"ISP_Tool/engine"
+	"ISP_Tool/model"
 	"ISP_Tool/runningLog"
 	"ISP_Tool/util"
 	"ISP_Tool/view"
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
-	log.Println("软件开始运行。")
+	log.Println()
+	log.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>软件开始运行。")
 	err := controller.InitConfig()
 	if err != nil {
 		fmt.Println("配置文件初始化失败！")
@@ -32,13 +35,15 @@ func main() {
 		for _, user := range users {
 			err := engine.Run(newClient, user)
 			if err != nil {
-				fmt.Println()
-				fmt.Println()
-				log.Println("健康登记打卡失败,Error:", err)
-				view.Clock_IN_Failed(user)
-				fmt.Println()
-				fmt.Println()
-				errConut++
+				if err.Error() != "健康登记打卡已存在" {
+					fmt.Println()
+					fmt.Println()
+					log.Println("健康登记打卡失败,Error:", err)
+					view.Clock_IN_Failed(user)
+					fmt.Println()
+					fmt.Println()
+					errConut++
+				}
 			} else {
 				fmt.Println()
 				fmt.Println()
@@ -49,10 +54,31 @@ func main() {
 			}
 		}
 		if errConut != 0 {
-			fmt.Println("失败数量：", errConut)
-			runningLog.Inform("健康登记打卡 失败！！！" + " 请手动打卡。")
-		} else {
-			runningLog.Inform("健康登记打卡 成功！")
+			fmt.Println("打卡失败数量：", errConut)
+			log.Println("打卡失败数量：", errConut)
+			if model.Auto_Start {
+				if !model.Auto_Clock_IN_Success {
+					runningLog.Inform("健康登记打卡 失败！！！" + " 请手动打卡。")
+					controller.WrittenToTheLog(time.Now().Format("2006/01/02") + " 自动打卡失败")
+				}
+			} else {
+				runningLog.Inform("健康登记打卡 失败！！！" + " 请手动打卡。")
+			}
+		}
+		if errConut == 0 && len(users) != 0 {
+			if model.Auto_Start {
+				if !model.Auto_Clock_IN_Success {
+					runningLog.Inform("健康登记打卡 成功！")
+					controller.WrittenToTheLog(time.Now().Format("2006/01/02") + " 自动打卡成功")
+				}
+			} else {
+				runningLog.Inform("健康登记打卡 成功！")
+			}
+		}
+		if len(users) == 0 {
+			fmt.Println()
+			fmt.Println("在配置文件中没有找到用户！")
+			log.Println("在配置文件中没有找到用户！")
 		}
 		fmt.Println()
 		view.EndSlect()

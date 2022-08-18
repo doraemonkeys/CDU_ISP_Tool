@@ -2,12 +2,18 @@ package util
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
+	"os/exec"
+	"runtime"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html/charset"
 	"golang.org/x/net/publicsuffix"
@@ -40,4 +46,97 @@ func GetIPV4() (string, error) {
 func Get_client() (http.Client, error) {
 	jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	return http.Client{Jar: jar}, nil
+}
+
+//获取当前的执行路径(包含可执行文件名称)
+//C:\Users\*\AppData\Local\Temp\*\exe\main.exe
+func GetCurrentPath() (string, error) {
+	s, err := exec.LookPath(os.Args[0])
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(s), nil
+}
+
+//获取当前文件的详细路径
+//D:/Go/workspace/port/network_learn/server/server.go
+func CurrentFilePath() (string, error) {
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		return "", errors.New("can not get current file info")
+	}
+	return file, nil
+}
+
+func NetWorkStatus() bool {
+	timeout := time.Duration(time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	resp, err := client.Get("https://www.baidu.com")
+	if err != nil {
+		log.Println("测试网络连接出现问题！", err)
+		return false
+	}
+	defer resp.Body.Close()
+	log.Println("Net Status , OK", resp.Status)
+	return true
+}
+
+//从文件末尾按行读取文件。
+//name:文件路径 lineNum:读取行数(超过文件行数则读取全文)。
+//最后一行为空也算读取了一行,会返回此行为空串,若全是空格也会原样返回。
+//返回的每一行都不包含换行符号。
+func ReverseRead(name string, lineNum uint) ([]string, error) {
+	//打开文件
+	file, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	//获取文件大小
+	fs, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	fileSize := fs.Size()
+
+	var offset int64 = -1   //偏移量，初始化为-1，若为0则会读到EOF
+	char := make([]byte, 1) //用于读取单个字节
+	lineStr := ""           //存放一行的数据
+	buff := make([]string, 0, 100)
+	for (-offset) <= fileSize {
+		//通过Seek函数从末尾移动游标然后每次读取一个字节，offset为偏移量
+		file.Seek(offset, io.SeekEnd)
+		_, err := file.Read(char)
+		if err != nil {
+			return buff, err
+		}
+		if char[0] == '\n' {
+			//判断文件类型为unix(LF)还是windows(CRLF)
+			file.Seek(-2, io.SeekCurrent) //io.SeekCurrent表示游标放置于当前位置，逆向偏移2个字节
+			//读完一个字节后游标会自动正向偏移一个字节
+			file.Read(char)
+			if char[0] == '\r' {
+				offset-- //windows跳过'\r'
+			}
+			lineNum-- //到此读取完一行
+			buff = append(buff, lineStr)
+			lineStr = ""
+			if lineNum == 0 {
+				return buff, nil
+			}
+		} else {
+			lineStr = string(char) + lineStr
+		}
+		offset--
+	}
+	buff = append(buff, lineStr)
+	return buff, nil
+}
+
+func PressToContinue(ch chan bool) {
+	fmt.Scanf("\n")
+	ch <- true
+	close(ch)
 }

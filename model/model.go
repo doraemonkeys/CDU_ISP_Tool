@@ -8,9 +8,15 @@ const User_no_RE string = `<[^?<>]+\?user_no=([0-9a-z]+)[^>]+>`
 
 const Isp_history_location_Re string = `>([^|]{0,10})\|([^|]+)\|([^<]+)<`
 
-const Ip_locationRe string = `"ct":\"([^"]+)", "prov":"([^"]+)", "city":"([^"]+)", "area":"([^"]+)", "idc":"", "yunyin":"([^"]+)"[^}]+}`
+const Ip_locationRe string = `"ct":\"([^"]+)", "prov":"([^"]+)", "city":"([^"]+)", "area":"([^"]+)", "idc":"", "yunyin":"[^"]+"[^}]+}`
 
 const UserAgent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36"
+
+//程序已经设置自启动
+var Auto_Start bool = false
+
+//程序启动前今天的打卡已经完成
+var Auto_Clock_IN_Success bool = false
 
 type UserInfo struct {
 	UserName  string

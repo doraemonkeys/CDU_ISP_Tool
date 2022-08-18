@@ -2,6 +2,7 @@ package config
 
 import (
 	"ISP_Tool/model"
+	"ISP_Tool/util"
 	"bufio"
 	"encoding/json"
 	"errors"
@@ -72,6 +73,7 @@ func ModifyUserInfos() error {
 	reader := bufio.NewReader(config)
 	users := []model.UserInfo{}
 	var user model.UserInfo
+	found := false
 	for {
 		userData, err := reader.ReadString('\n')
 		if err == io.EOF {
@@ -80,10 +82,12 @@ func ModifyUserInfos() error {
 				json.Unmarshal([]byte(userData), &user)
 				if user.UserID == NewUser.UserID {
 					user.UserPwd = NewUser.UserPwd
-					users = append(users, user)
-				} else {
-					return errors.New("没有找到目标ID")
+					found = true
 				}
+				users = append(users, user)
+			}
+			if !found {
+				return errors.New("没有找到目标ID")
 			}
 			break
 		}
@@ -96,6 +100,7 @@ func ModifyUserInfos() error {
 		json.Unmarshal([]byte(userData), &user)
 		if user.UserID == NewUser.UserID {
 			user.UserPwd = NewUser.UserPwd
+			found = true
 		}
 		users = append(users, user)
 	}
@@ -178,6 +183,119 @@ func RebuitConfig(users []model.UserInfo) error {
 		}
 		data = append(data, '\n')
 		config.Write(data)
+	}
+	return nil
+}
+
+func SetAutoStart() error {
+	startPath := `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs`
+	file, err := os.OpenFile(startPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
+	if err != nil {
+		log.Println("创建或打开文件失败!", err)
+		return err
+	}
+	defer file.Close()
+	path, err := util.GetCurrentPath()
+	if err != nil {
+		log.Println("获取当前文件目录失败！", err)
+		return err
+	}
+	lastindex := strings.LastIndex(path, "\\")
+	toolName := path[lastindex+1:]
+	path = path[:lastindex]
+	path = strings.Replace(path, `\`, `\\`, -1)
+	_, err = file.WriteString(`Set objShell = CreateObject("WScript.Shell")` + "\n")
+	if err != nil {
+		log.Println("写入当前文件目录失败！", err)
+		return err
+	}
+	_, err = file.WriteString(`objShell.CurrentDirectory = "` + path + `"` + "\n")
+	if err != nil {
+		log.Println("写入当前文件目录失败！", err)
+		return err
+	}
+	_, err = file.WriteString(`objShell.Run "cmd /c ` + toolName + `"` + `,0`)
+	if err != nil {
+		log.Println("写入当前文件目录失败！", err)
+		return err
+	}
+	start_config, err := os.OpenFile("./auto_start.config", os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		log.Println("创建或打开自启动配置文件失败!", err)
+		return err
+	}
+	defer start_config.Close()
+	n, err := start_config.WriteAt([]byte("true "), 0)
+	if err != nil || n != 5 {
+		log.Println("写入自启动配置文件失败！", err)
+		return err
+	}
+	return nil
+}
+
+func CancelAutoStart() error {
+	startPath := `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs`
+	file, err := os.OpenFile(startPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
+	if err != nil {
+		log.Println("创建或打开文件失败!", err)
+		return err
+	}
+	defer file.Close()
+	start_config, err := os.OpenFile("./auto_start.config", os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		log.Println("创建或打开自启动配置文件失败!", err)
+		return err
+	}
+	defer start_config.Close()
+	n, err := start_config.WriteAt([]byte("false"), 0)
+	if err != nil || n != 5 {
+		log.Println("写入自启动配置文件失败！", err)
+		return err
+	}
+	return nil
+}
+
+//添加用户信息
+func AddUser() error {
+	config, err := os.OpenFile("./配置文件.config", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Println("打开配置文件失败，Error:", err)
+		fmt.Println("打开配置文件失败，Error:", err)
+		return err
+	}
+	defer config.Close()
+	var users []model.UserInfo
+	var NewUser = model.UserInfo{}
+	for {
+		fmt.Println("输入 Q 退出添加账号")
+		fmt.Println()
+		fmt.Println("请输入学号：")
+		var id string
+		fmt.Scan(&id)
+		NewUser.UserID = strings.TrimSpace(id)
+		if NewUser.UserID == "Q" || NewUser.UserID == "q" {
+			break
+		}
+		fmt.Println("请输入密码：")
+		var pwd string
+		fmt.Scan(&pwd)
+		NewUser.UserPwd = strings.TrimSpace(pwd)
+		if NewUser.UserPwd == "Q" || NewUser.UserPwd == "q" {
+			break
+		}
+		users = append(users, NewUser)
+	}
+	fmt.Scanf("\n")
+	for _, v := range users {
+		data, err := json.Marshal(v)
+		if err != nil {
+			log.Println("个人信息序列化失败！", err)
+			fmt.Println("个人信息序列化失败！", err)
+			return err
+		}
+		data = append(data, '\n')
+		config.Write(data)
+		fmt.Printf("添加 %s 成功！\n", v.UserID)
 	}
 	return nil
 }

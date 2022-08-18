@@ -3,8 +3,11 @@ package controller
 import (
 	"ISP_Tool/config"
 	"ISP_Tool/model"
+	"ISP_Tool/util"
 	"ISP_Tool/view"
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -62,7 +65,7 @@ func endProcess(ch chan string) {
 				fmt.Println("修改密码成功！")
 			}
 		case "2":
-			err := AddUser()
+			err := config.AddUser()
 			if err != nil {
 				fmt.Println("添加用户失败!")
 			}
@@ -76,60 +79,75 @@ func endProcess(ch chan string) {
 			} else {
 				fmt.Println("清空成功！")
 			}
+		case "5":
+			fmt.Println()
+			fmt.Println(">>>>>如果设置失败，请关闭杀毒软件并以管理员权限重新运行<<<<<")
+			fmt.Println()
+			if model.Auto_Start {
+				err := config.CancelAutoStart()
+				if err != nil {
+					log.Println("关闭自启动失败！")
+					fmt.Println("关闭自启动失败！")
+				} else {
+					fmt.Println("关闭自启动成功！")
+					log.Println("关闭自启动成功！")
+					model.Auto_Start = false
+				}
+			} else {
+				err := config.SetAutoStart()
+				if err != nil {
+					log.Println("开启自启动失败！")
+					fmt.Println("开启自启动失败！")
+				} else {
+					fmt.Println("开启自启动成功！")
+					log.Println("开启自启动成功！")
+					model.Auto_Start = true
+				}
+			}
+			fmt.Println()
 		}
 		ch <- "keep_alive"
 		fmt.Println(">>>>>>>>>>>无操作120秒后自动退出<<<<<<<<<<<")
-		fmt.Println("请选择 【0 - 4】:")
+		fmt.Println("请选择 【0 - 5】:")
 	}
-}
-
-//添加用户信息
-func AddUser() error {
-	config, err := os.OpenFile("./配置文件.config", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Println("打开配置文件失败，Error:", err)
-		fmt.Println("打开配置文件失败，Error:", err)
-		return err
-	}
-	defer config.Close()
-	var users []model.UserInfo
-	var NewUser = model.UserInfo{}
-	for {
-		fmt.Println("输入 Q 退出添加账号")
-		fmt.Println("请输入学号：")
-		var id string
-		fmt.Scan(&id)
-		NewUser.UserID = strings.TrimSpace(id)
-		if NewUser.UserID == "Q" || NewUser.UserID == "q" {
-			break
-		}
-		fmt.Println("请输入密码：")
-		var pwd string
-		fmt.Scan(&pwd)
-		NewUser.UserPwd = strings.TrimSpace(pwd)
-		if NewUser.UserPwd == "Q" || NewUser.UserPwd == "q" {
-			break
-		}
-		users = append(users, NewUser)
-	}
-	fmt.Scanf("\n")
-	for _, v := range users {
-		data, err := json.Marshal(v)
-		if err != nil {
-			log.Println("个人信息序列化失败！", err)
-			fmt.Println("个人信息序列化失败！", err)
-			return err
-		}
-		data = append(data, '\n')
-		config.Write(data)
-		fmt.Printf("添加 %s 成功！\n", v.UserID)
-	}
-	return nil
 }
 
 func InitConfig() error {
 	log.Println("正在初始化配置文件")
 	fmt.Println("正在初始化配置文件")
+	model.Auto_Start = CheckAutoStart()
+	if model.Auto_Start {
+		if TodayClockInSuccess() {
+			model.Auto_Clock_IN_Success = true
+			view.Auto_Clock_IN_Success()
+			fmt.Println()
+			startTime := time.Now()
+			fmt.Printf("按Enter键继续......")
+			ch := make(chan bool, 1)
+			go util.PressToContinue(ch)
+			ok := false
+			for time.Since(startTime) < time.Minute/2 {
+				select {
+				case ok = <-ch:
+				default:
+					time.Sleep(time.Second / 4)
+				}
+				if ok {
+					break
+				}
+			}
+		}
+	}
+	fmt.Println("正在检查网络环境...")
+	for i := 0; !util.NetWorkStatus(); i++ {
+		time.Sleep(time.Second)
+		if i == 30 {
+			fmt.Println("网络连接错误，请检查网络配置!")
+			log.Println("网络连接错误，请检查网络配置!")
+			return errors.New("网络连接错误")
+		}
+	}
+	fmt.Println("Net Status , OK!")
 	fmt.Println()
 	fmt.Println()
 	view.Menu()
@@ -195,6 +213,62 @@ func InitConfig() error {
 	return nil
 }
 
+//是否设置为自启动
+func CheckAutoStart() bool {
+	autoStart, err := os.Open("./auto_start.config")
+	if err != nil {
+		log.Println("读取自启动信息失败！", err)
+		autoStart, err := os.OpenFile("./auto_start.config", os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
+		if err != nil {
+			log.Println("初始化自启动信息失败！", err)
+		}
+		defer autoStart.Close()
+		//默认设置为不自启动
+		autoStart.WriteString("false\n")
+		return false
+	}
+	defer autoStart.Close()
+	reader := bufio.NewReader(autoStart)
+	auto, err := reader.ReadString('\n')
+	if err != nil {
+		if err == io.EOF {
+			autoStart.WriteString("false\n")
+		}
+		log.Println("读取自动打卡信息失败！", err)
+		fmt.Println("读取自动打卡信息失败！", err)
+		return false
+	}
+	if strings.TrimSpace(auto) == "true" {
+		return true
+	}
+	if strings.TrimSpace(auto) == "false" {
+		return false
+	}
+	return false
+}
+
+//今日自动打卡是否成功,请确保auto_start.config文件存在
+func TodayClockInSuccess() bool {
+	clockInInfo, err := util.ReverseRead("./auto_start.config", 2)
+	if err != nil {
+		log.Println("读取自动打卡信息失败！", err)
+		fmt.Println("读取自动打卡信息失败！", err)
+		return false
+	}
+	if len(clockInInfo) == 1 {
+		if clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功" {
+			return true
+		}
+	}
+	if strings.TrimSpace(clockInInfo[0]) == "" {
+		return clockInInfo[1] == time.Now().Format("2006/01/02")+" 自动打卡成功"
+	}
+	if clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功" {
+		return true
+	}
+	return false
+}
+
 func ReachConsensus() bool {
 	fmt.Println(">>>>>>>>>>>>没有检测到账号，你可能是第一次使用本软件！<<<<<<<<<<<<<<<<")
 	fmt.Println(">>>>>>>>>>>>          请阅读注意事项                  <<<<<<<<<<<<<<<<")
@@ -216,4 +290,19 @@ func ReachConsensus() bool {
 		input = strings.ToUpper(input)
 	}
 	return true
+}
+
+func WrittenToTheLog(content string) {
+	CheckAutoStart()
+	auto_start, err := os.OpenFile("./auto_start.config", os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Println("自动打卡写入日志失败！", err)
+		return
+	}
+	defer auto_start.Close()
+	_, err = auto_start.WriteString(content + "\n")
+	if err != nil {
+		log.Println("自动打卡写入日志失败！", err)
+		return
+	}
 }

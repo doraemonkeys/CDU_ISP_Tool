@@ -63,8 +63,9 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	re = regexp.MustCompile("登记已存在")
 	match = re.Find(content4)
 	if match != nil {
-		log.Println(user.UserID, "登记已存在！")
-		return nil
+		log.Println(user.UserID, "健康登记打卡已存在")
+		fmt.Println(user.UserID, "健康登记打卡已存在")
+		return errors.New("健康登记打卡已存在")
 	}
 	return errors.New("CDU-ISP 健康登记打卡 失败")
 }
