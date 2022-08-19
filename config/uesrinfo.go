@@ -284,8 +284,8 @@ func AddUser() error {
 	var users []model.UserInfo
 	var NewUser = model.UserInfo{}
 	for {
-		fmt.Println("输入 Q 退出添加账号")
 		fmt.Println()
+		fmt.Println("输入 Q 退出添加账号")
 		fmt.Println("请输入学号：")
 		var id string
 		fmt.Scan(&id)

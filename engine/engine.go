@@ -9,12 +9,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/fatih/color"
 )
 
 func Run(client http.Client, user model.UserInfo) error {
 	if !model.UserConfigChanged && model.Auto_Start && model.Auto_Clock_IN_Success {
 		log.Println(user.UserID, "健康登记打卡已存在")
-		fmt.Println(user.UserID, "健康登记打卡已存在")
+		color.Green("%s %s", user.UserID, "健康登记打卡已存在")
 		return errors.New("健康登记打卡已存在")
 	}
 	err := login.LoginISP(&client, user)

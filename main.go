@@ -12,6 +12,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 func main() {
@@ -57,7 +59,7 @@ func main() {
 		//不管打卡成功或者失败，循环一次后都认为配置文件已经执行过一次,用户没有再次修改
 		model.UserConfigChanged = false
 		if errConut != 0 {
-			fmt.Println("打卡失败数量：", errConut)
+			color.Red("打卡失败数量：%d", errConut)
 			log.Println("打卡失败数量：", errConut)
 			if model.Auto_Start {
 				if !model.Auto_Clock_IN_Success {
@@ -99,11 +101,12 @@ func main() {
 					break
 				}
 			}
-			ok = true //第二天到了,尝试继续打卡
-		}
-		//检查自动打卡是否已经取消
-		if !controller.CheckAutoStart() {
-			ok = false
+			//第二天到了,尝试继续打卡
+			ok = true
+			//检查自动打卡是否已经取消
+			if !controller.CheckAutoStart() {
+				ok = false
+			}
 		}
 	}
 }

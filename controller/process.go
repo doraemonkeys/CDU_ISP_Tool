@@ -14,6 +14,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 //打卡结束处理用户的输入
@@ -74,7 +76,7 @@ func endProcess(ch chan string) {
 				fmt.Println("添加用户失败!")
 			}
 		case "3":
-			ok = false
+			return
 		case "4":
 			err := config.RebuitConfig([]model.UserInfo{})
 			if err != nil {
@@ -117,7 +119,9 @@ func endProcess(ch chan string) {
 		}
 		ch <- "keep_alive"
 		fmt.Println(">>>>>>>>>>>无操作120秒后自动退出<<<<<<<<<<<")
-		fmt.Println("请选择 【0 - 5】:")
+		attributes := [4]color.Attribute{}
+		attributes[1] = color.FgRed
+		util.ColorPrint(attributes[:], "请选择 【", "0 - 5", "】:\n")
 	}
 }
 
@@ -127,10 +131,14 @@ func InitConfig() error {
 	model.Auto_Start = CheckAutoStart()
 	if model.Auto_Start {
 		if TodayClockInSuccess() {
+			//已经设置为自启动并且今日打卡已成功
+			log.Println("程序重新运行的原因: 电脑重启或用户手动打开")
+			fmt.Println()
 			model.Auto_Clock_IN_Success = true
 			view.Auto_Clock_IN_Success()
 			fmt.Println()
 			startTime := time.Now()
+			fmt.Println()
 			fmt.Printf("按Enter键继续执行程序......")
 			ch := make(chan bool, 1)
 			go util.PressToContinue(ch)
@@ -169,7 +177,6 @@ func InitConfig() error {
 		if err != nil && err != io.EOF {
 			log.Println("预读取配置文件失败，Error:", err)
 			fmt.Println("预读取配置文件失败，Error:", err)
-			config.Close()
 			return err
 		}
 		if n < 10 {
@@ -179,8 +186,8 @@ func InitConfig() error {
 			return nil
 		}
 	} else {
-		log.Println("配置文件不存在或打开失败,Error:", err)
-		fmt.Println("配置文件不存在或打开失败,Error:", err)
+		log.Println("配置文件不存在或打开失败", err)
+		fmt.Println("配置文件不存在或打开失败")
 	}
 	config, err = os.OpenFile("./配置文件.config", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
 	if err != nil {
@@ -286,7 +293,11 @@ func ReachConsensus() bool {
 	view.Warn()
 	fmt.Println()
 	var input string
-	fmt.Println("是否同意？输入 [Yes] or [No]")
+	//fmt.Println("是否同意？输入 [" + color.RedString("Yes") + "] or [" + color.RedString("No") + "]")
+	attributes := [5]color.Attribute{}
+	attributes[1] = color.FgRed
+	attributes[3] = color.FgRed
+	util.ColorPrint(attributes[:], "是否同意？输入 [", "Yes", "] or [", "No", "]\n")
 	fmt.Scan(&input)
 	input = strings.TrimSpace(input)
 	input = strings.ToUpper(input)
@@ -294,8 +305,8 @@ func ReachConsensus() bool {
 		if input == "NO" {
 			return false
 		}
+		util.ColorPrint(attributes[:], "是否同意？输入 [", "Yes", "] or [", "No", "]\n")
 		fmt.Scan(&input)
-		fmt.Println("是否同意？输入 [Yes] or [No]")
 		input = strings.TrimSpace(input)
 		input = strings.ToUpper(input)
 	}

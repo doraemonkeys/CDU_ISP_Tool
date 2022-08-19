@@ -6,12 +6,14 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"regexp"
 
+	"github.com/fatih/color"
 	"golang.org/x/text/transform"
 )
 
@@ -22,10 +24,10 @@ func Get_User_Nonce(client *http.Client) (string, error) {
 	request.Header.Set("user-agent", model.UserAgent)
 	request.Header.Set("referer", "https://xsswzx.cdu.edu.cn/ispstu/com_user/weblogin.asp")
 
-	resp, _ := client.Do(request)
-	if resp.StatusCode != 200 {
-		log.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化，请联系开发者。返回的状态：", http.StatusText(resp.StatusCode))
-		fmt.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化，请联系开发者。返回的状态：", http.StatusText(resp.StatusCode))
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化，请联系开发者。")
+		fmt.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化，请联系开发者。")
 	}
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -178,8 +180,8 @@ func GetLocation(user_no string, client *http.Client) (model.Location, error) {
 		log.Println("获取ip地址信息失败！")
 		fmt.Println("获取ip地址信息失败！")
 	} else {
-		fmt.Println("当前ip地址：",
-			IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
+		fmt.Printf("当前ip地址：")
+		color.Yellow("%s %s %s", IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
 		log.Println("当前ip地址：",
 			IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
 	}

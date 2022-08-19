@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
@@ -64,7 +66,7 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	match = re.Find(content4)
 	if match != nil {
 		log.Println(user.UserID, "健康登记打卡已存在")
-		fmt.Println(user.UserID, "健康登记打卡已存在")
+		color.Green("%s %s", user.UserID, "健康登记打卡已存在")
 		return errors.New("健康登记打卡已存在")
 	}
 	return errors.New("CDU-ISP 健康登记打卡 失败")
