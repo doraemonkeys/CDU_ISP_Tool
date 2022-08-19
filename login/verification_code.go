@@ -16,8 +16,8 @@ func Get_ISP_Login_code(client *http.Client) (string, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
+		log.Println("访问ISP登录界面失败！可能是ISP结构发生变化，请联系开发者。")
+		fmt.Println("访问ISP登录界面失败！可能是ISP结构发生变化，请联系开发者。")
 		return "", err
 	}
 	content, err := ioutil.ReadAll(resp.Body)
