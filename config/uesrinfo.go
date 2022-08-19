@@ -133,15 +133,21 @@ func DeleteUser() error {
 	reader := bufio.NewReader(config)
 	users := []model.UserInfo{}
 	var user model.UserInfo
+	found := false
 	for {
 		userData, err := reader.ReadString('\n')
 		if err == io.EOF {
 			if len(userData) > 1 {
 				userData = strings.TrimSpace(userData)
 				json.Unmarshal([]byte(userData), &user)
-				if user.UserID != targetUser.UserID {
-					return errors.New("没有找到目标ID")
+				if user.UserID == targetUser.UserID {
+					found = true
+				} else {
+					users = append(users, user)
 				}
+			}
+			if !found {
+				return errors.New("没有找到目标ID")
 			}
 			break
 		}
@@ -153,6 +159,7 @@ func DeleteUser() error {
 		userData = strings.TrimSpace(userData)
 		json.Unmarshal([]byte(userData), &user)
 		if user.UserID == targetUser.UserID {
+			found = true
 			continue
 		}
 		users = append(users, user)
