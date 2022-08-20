@@ -102,6 +102,7 @@ func main() {
 				}
 			}
 			//第二天到了,尝试继续打卡
+			model.Auto_Clock_IN_Success = false
 			ok = true
 			//检查自动打卡是否已经取消
 			if !controller.CheckAutoStart() {
