@@ -103,6 +103,7 @@ func main() {
 			}
 			//第二天到了,尝试继续打卡
 			model.Auto_Clock_IN_Success = false
+			model.UserConfigChanged = true //假定修改过配置
 			ok = true
 			//检查自动打卡是否已经取消
 			if !controller.CheckAutoStart() {
