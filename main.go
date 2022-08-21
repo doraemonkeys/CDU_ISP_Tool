@@ -93,8 +93,8 @@ func main() {
 		if !ok && model.Auto_Start {
 			sleepTime := time.Now().Format("2006/01/02")
 			for sleepTime == time.Now().Format("2006/01/02") {
-				log.Println("程序休眠一小时")
-				time.Sleep(time.Hour)
+				log.Println("程序休眠半小时")
+				time.Sleep(time.Hour / 2)
 				//如果自动打卡没有成功，休眠一小时后再次尝试打卡
 				if !model.Auto_Clock_IN_Success {
 					log.Println("发现上次自动打卡没有成功，再次尝试。")
