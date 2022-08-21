@@ -20,7 +20,7 @@
 
    ![](https://raw.githubusercontent.com/Doraemonkeys/picture/master/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202022-08-18%20030702.png)
 
-2. **解压**到自己熟悉的文件夹
+2. **解压**到自己熟悉的文件夹(不要有中文路径)
 
 3. 运行软件根据提示操作即可
 
