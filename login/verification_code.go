@@ -21,7 +21,6 @@ func Get_ISP_Login_code(client *http.Client) (string, error) {
 			log.Println("访问ISP登录界面失败！ISP不支持Ipv6。")
 			fmt.Println("访问ISP登录界面失败！ISP不支持Ipv6。")
 		}
-		return "", err
 	}
 	if err != nil {
 		log.Println("访问ISP登录界面失败！可能是ISP结构发生变化，请联系开发者。")
