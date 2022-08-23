@@ -17,6 +17,56 @@ import (
 	"golang.org/x/text/transform"
 )
 
+//检查打卡是否异常
+func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue, error) {
+	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth.asp"
+	// URL param
+	queryData := url.Values{}
+	queryData.Set("id", user_no)
+	u, err := url.ParseRequestURI(apiUrl)
+	if err != nil {
+		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
+		log.Printf("parse url requestUrl failed, err:%v\n", err)
+		return model.FieldAndValue{}, errors.New("parse url requestUrl failed")
+	}
+	u.RawQuery = queryData.Encode() // URL encode
+
+	request, _ := http.NewRequest("GET", u.String(), nil)
+	request.Header.Set("authority", "xsswzx.cdu.edu.cn")
+	request.Header.Set("content-type", "application/x-www-form-urlencoded")
+	request.Header.Set("user-agent", model.UserAgent)
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		return model.FieldAndValue{}, err
+	}
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("访问ISP页面失败！", err)
+		fmt.Println("访问ISP页面失败！", err)
+		return model.FieldAndValue{}, err
+	}
+	re := regexp.MustCompile("异常")
+	match := re.Find(content)
+	if match == nil {
+		return model.FieldAndValue{}, nil
+	}
+	log.Println("健康登记出现异常，可能是程序的错误或正处于风险区！")
+	color.Red("健康登记出现异常，可能是程序的错误或正处于风险区！")
+	re2 := regexp.MustCompile(model.Clock_IN_ID)
+	match2 := re2.FindSubmatch(content)
+	if len(match2) != 3 {
+		log.Println("获取撤回打卡key-value字段失败,可能是ISP结构发生变化，请联系开发者。")
+		return model.FieldAndValue{}, errors.New("健康登记出现异常")
+	}
+	var key_value = model.FieldAndValue{}
+	key_value.Field = string(match2[1])
+	key_value.Value = string(match2[2])
+	log.Printf("获取到当前打卡%s(ID)：%s\n", key_value.Field, key_value.Value)
+	return key_value, errors.New("健康登记出现异常")
+}
+
 func Get_User_Nonce(client *http.Client) (string, error) {
 	request, _ := http.NewRequest("GET", "https://xsswzx.cdu.edu.cn/ispstu/com_user/webindex.asp", nil)
 	request.Header.Set("authority", "xsswzx.cdu.edu.cn")
@@ -140,14 +190,14 @@ func Get_isp_location_history(user_no string, client *http.Client) (model.Locati
 	request.Header.Set("user-agent", model.UserAgent)
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Println("访问ISP打开页面失败，可能是ISP结构发生变化，请联系开发者。返回的状态：", http.StatusText(resp.StatusCode))
-		fmt.Println("访问ISP打开页面失败，可能是ISP结构发生变化，请联系开发者。返回的状态：", http.StatusText(resp.StatusCode))
+		log.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
 		return model.Location{}, err
 	}
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("访问ISP打开页面失败！", err)
-		fmt.Println("访问ISP打开页面失败！", err)
+		log.Println("读取ISP页面内容失败！", err)
+		fmt.Println("读取ISP页面内容失败！", err)
 		return model.Location{}, err
 	}
 	re := regexp.MustCompile(model.Isp_history_location_Re)

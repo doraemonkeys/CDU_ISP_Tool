@@ -16,19 +16,19 @@ import (
 )
 
 func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
-	today := time.Now().Local().Format("2006年1月2日")
+	//today := time.Now().Local().Format("2006年1月2日")
 	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_add.asp"
-	// URL param
-	queryData := url.Values{}
-	queryData.Set("id", user.UserNonce)
-	queryData.Set("id2", today)
-	u, err := url.ParseRequestURI(apiUrl)
-	if err != nil {
-		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
-		log.Printf("parse url requestUrl failed, err:%v\n", err)
-		return err
-	}
-	u.RawQuery = queryData.Encode() // URL encode
+	//URL param
+	// queryData := url.Values{}
+	// queryData.Set("id", user.UserNonce)
+	// queryData.Set("id2", today)
+	// u, err := url.ParseRequestURI(apiUrl)
+	// if err != nil {
+	// 	fmt.Printf("parse url requestUrl failed, err:%v\n", err)
+	// 	log.Printf("parse url requestUrl failed, err:%v\n", err)
+	// 	return err
+	// }
+	// u.RawQuery = queryData.Encode() // URL encode
 	// 构造请求
 	param := url.Values{}
 	param.Set("action", "add")
@@ -39,10 +39,18 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	param.Set("kesou", "否")
 	param.Set("wls", "否")
 	param.Set("wuhan", "否")
-	data := param.Encode()
-	req4, _ := http.NewRequest("POST", u.String(), strings.NewReader(data))
+	param2 := url.Values{}
+	param2.Set("wuhan", "否")
+	// param.Set("adds", "")
+	// param.Set("addsxy", "")
+	// param.Set("zhengduan", "")
+	//data := param.Encode() + "&" + param2.Encode() + "&zhengduan=&adds=&addsxy="
+	data := param.Encode() + "&" + param2.Encode()
+	//req4, _ := http.NewRequest("POST", u.String(), strings.NewReader(data))
+	req4, _ := http.NewRequest("POST", apiUrl, strings.NewReader(data))
 	req4.Header.Set("authority", "xsswzx.cdu.edu.cn")
 	req4.Header.Set("content-type", "application/x-www-form-urlencoded")
+	req4.Header.Set("referer", "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_add.asp")
 	req4.Header.Set("user-agent", model.UserAgent)
 
 	resp4, err := client.Do(req4)
@@ -57,6 +65,7 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 		fmt.Println("读取ISP登记返回信息失败！", err)
 		return err
 	}
+	//fmt.Println(string(content4))
 	re := regexp.MustCompile("提交成功")
 	match := re.Find(content4)
 	if match != nil {
@@ -71,3 +80,63 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	}
 	return errors.New("CDU-ISP 健康登记打卡 失败")
 }
+
+func Cancel_Clock_In(key_value model.FieldAndValue, client *http.Client) error {
+	log.Println("健康登记已成功,但出现异常，将自动撤回本次打卡！")
+	color.Red("健康登记已成功,但出现异常，将自动撤回本次打卡！")
+	success := false
+	var err error
+	for i := 0; !success; i++ {
+		err = tryCancle(key_value, client)
+		if err == nil {
+			return nil
+		}
+		//只尝试取消10次
+		if i > 10 {
+			break
+		}
+		time.Sleep(time.Second / 4)
+	}
+	return err
+}
+
+func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
+	//apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth.asp"
+	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_del.asp"
+	// URL param
+	queryData := url.Values{}
+	queryData.Set(key_value.Field, key_value.Value)
+	u, err := url.ParseRequestURI(apiUrl)
+	if err != nil {
+		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
+		log.Printf("parse url requestUrl failed, err:%v\n", err)
+		return errors.New("parse url requestUrl failed")
+	}
+	u.RawQuery = queryData.Encode() // URL encode
+
+	request, _ := http.NewRequest("GET", u.String(), nil)
+	//request.Header.Set("authority", "xsswzx.cdu.edu.cn")
+	//request.Header.Set("content-type", "application/x-www-form-urlencoded")
+	request.Header.Set("user-agent", model.UserAgent)
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		return err
+	}
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("读取ISP页面内容失败！", err)
+		fmt.Println("读取ISP页面内容失败！", err)
+		return err
+	}
+	re := regexp.MustCompile("成功")
+	match := re.Find(content)
+	if match != nil {
+		return nil
+	}
+	return errors.New("发送删除请求成功,但出现未知的错误！")
+}
+
+//action=add&area=%E9%BE%99%E6%B3%89%E9%A9%BF%E5%8C%BA&city=%E6%88%90%E9%83%BD%E5%B8%82&fare=%E5%90%A6&kesou=%E5%90%A6&province=%E5%9B%9B%E5%B7%9D%E7%9C%81&wls=%E5%90%A6&wuhan=%E5%90%A6&wuhan=%E5%90%A6
+//province=%E5%9B%9B%E5%B7%9D%E7%9C%81&city=%E6%88%90%E9%83%BD%E5%B8%82&area=%E9%BE%99%E6%B3%89%E9%A9%BF%E5%8C%BA&kesou=%E5%90%A6&zhengduan=&fare=%E5%90%A6&wls=%E5%90%A6&wuhan=%E5%90%A6&wuhan=%E5%90%A6&action=add&adds=&addsxy=

@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/fatih/color"
 )
 
 func Run(client http.Client, user model.UserInfo) error {
@@ -34,6 +37,20 @@ func Run(client http.Client, user model.UserInfo) error {
 	user.Location = userLocation
 	err = uploader.ISP_Clock_In(&client, user)
 	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second)
+	key_value, err := fetcher.CheckingAnomalies(user_no, &client)
+	if err != nil {
+		err2 := uploader.Cancel_Clock_In(key_value, &client)
+		if err2 != nil {
+			log.Println("自动撤回打卡失败！请前往ISP手动修改！")
+			color.Red("自动撤回打卡失败！请前往ISP手动修改！")
+		}
+		if err2 == nil {
+			log.Println("自动撤回打卡成功！")
+			color.HiGreen("自动撤回打卡成功！")
+		}
 		return err
 	}
 	return nil

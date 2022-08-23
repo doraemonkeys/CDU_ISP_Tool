@@ -18,6 +18,8 @@ const Ipv6Re string = `\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-
 
 const UserAgent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36"
 
+const Clock_IN_ID string = `projecthealth_del.asp\?([a-z]+[^=])=([0-9a-z]+)"`
+
 //程序已经设置自启动
 var Auto_Start bool = false
 
@@ -39,4 +41,10 @@ type Location struct {
 	Province string
 	City     string
 	Area     string
+}
+
+//key-value
+type FieldAndValue struct {
+	Field string
+	Value string
 }
