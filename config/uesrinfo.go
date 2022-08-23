@@ -211,17 +211,17 @@ func SetAutoStart() error {
 	toolName := path[lastindex+1:]
 	path = path[:lastindex]
 	path = strings.Replace(path, `\`, `\\`, -1)
-	_, err = file.WriteString(`Set objShell = CreateObject("WScript.Shell")` + "\n")
+	_, err = file.WriteString(util.Utf8ToANSI(`Set objShell = CreateObject("WScript.Shell")` + "\n"))
 	if err != nil {
 		log.Println("写入当前文件目录失败！", err)
 		return err
 	}
-	_, err = file.WriteString(`objShell.CurrentDirectory = "` + path + `"` + "\n")
+	_, err = file.WriteString(util.Utf8ToANSI(`objShell.CurrentDirectory = "` + path + `"` + "\n"))
 	if err != nil {
 		log.Println("写入当前文件目录失败！", err)
 		return err
 	}
-	_, err = file.WriteString(`objShell.Run "cmd /c ` + toolName + `"` + `,0`)
+	_, err = file.WriteString(util.Utf8ToANSI(`objShell.Run "cmd /c ` + toolName + `"` + `,0`))
 	if err != nil {
 		log.Println("写入当前文件目录失败！", err)
 		return err

@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/axgle/mahonia"
 	"github.com/fatih/color"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/net/publicsuffix"
@@ -192,4 +193,9 @@ func ColorPrint(attributes []color.Attribute, strs ...string) {
 			fmt.Print(str)
 		}
 	}
+}
+
+//GB18030
+func Utf8ToANSI(text string) string {
+	return mahonia.NewEncoder("GB18030").ConvertString(text)
 }
