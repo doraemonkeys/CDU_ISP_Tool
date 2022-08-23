@@ -2,7 +2,7 @@ package login
 
 import (
 	"ISP_Tool/model"
-	"ISP_Tool/util"
+	"ISP_Tool/utils"
 	"bufio"
 	"errors"
 	"fmt"
@@ -44,7 +44,7 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	}
 	bodyReader := bufio.NewReader(resp.Body)
 	//自动检测html编码
-	e, err := util.DetermineEncodingbyPeek(bodyReader)
+	e, err := utils.DetermineEncodingbyPeek(bodyReader)
 	if err != nil {
 		log.Println("登录返回界面检测html编失败，请联系开发者。", err)
 		fmt.Println("登录返回界面检测html编失败，请联系开发者。", err)

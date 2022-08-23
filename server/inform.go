@@ -1,4 +1,4 @@
-package runningLog
+package server
 
 import (
 	"log"

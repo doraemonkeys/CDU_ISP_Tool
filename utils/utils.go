@@ -1,4 +1,4 @@
-package util
+package utils
 
 import (
 	"bufio"
@@ -55,6 +55,7 @@ func Get_client() (http.Client, error) {
 
 //获取当前的执行路径(包含可执行文件名称)
 //C:\Users\*\AppData\Local\Temp\*\exe\main.exe
+//(读取命令行的方式，可能得不到想要的路径)
 func GetCurrentPath() (string, error) {
 	s, err := exec.LookPath(os.Args[0])
 	if err != nil {
@@ -140,6 +141,7 @@ func ReverseRead(name string, lineNum uint) ([]string, error) {
 	return buff, nil
 }
 
+//回车后返回true
 func PressToContinue(ch chan bool) {
 	fmt.Scanf("\n")
 	ch <- true

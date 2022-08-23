@@ -2,7 +2,7 @@ package fetcher
 
 import (
 	"ISP_Tool/model"
-	"ISP_Tool/util"
+	"ISP_Tool/utils"
 	"bufio"
 	"errors"
 	"fmt"
@@ -48,7 +48,7 @@ func Get_User_Nonce(client *http.Client) (string, error) {
 }
 
 func Get_IP_Loaction() (model.Location, error) {
-	client, err := util.Get_client()
+	client, err := utils.Get_client()
 	if err != nil {
 		log.Println("程序初始化client失败，请联系开发者。", err)
 		fmt.Println("程序初始化client失败，请联系开发者。", err)
@@ -63,7 +63,7 @@ func Get_IP_Loaction() (model.Location, error) {
 	}
 	// URL param
 	queryData := url.Values{}
-	ip, err := util.GetIPV4()
+	ip, err := utils.GetIPV4()
 	if err != nil {
 		return model.Location{}, err
 	}
@@ -82,7 +82,7 @@ func Get_IP_Loaction() (model.Location, error) {
 	}
 	bodyReader := bufio.NewReader(resp.Body)
 	//自动检测html编码
-	e, err := util.DetermineEncodingbyPeek(bodyReader)
+	e, err := utils.DetermineEncodingbyPeek(bodyReader)
 	if err != nil {
 		log.Println("检测html编失败，请联系开发者。", err)
 		fmt.Println("检测html编失败，请联系开发者。", err)
