@@ -47,23 +47,26 @@ func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue
 		fmt.Println("访问ISP页面失败！", err)
 		return model.FieldAndValue{}, err
 	}
-	re := regexp.MustCompile("异常")
-	match := re.Find(content)
-	if match == nil {
-		return model.FieldAndValue{}, nil
-	}
-	log.Println("健康登记出现异常，可能是程序的错误或正处于风险区！")
-	color.Red("健康登记出现异常，可能是程序的错误或正处于风险区！")
+	//匹配撤回打卡key-value字段
+	var key_value = model.FieldAndValue{}
 	re2 := regexp.MustCompile(model.Clock_IN_ID)
 	match2 := re2.FindSubmatch(content)
 	if len(match2) != 3 {
 		log.Println("获取撤回打卡key-value字段失败,可能是ISP结构发生变化，请联系开发者。")
-		return model.FieldAndValue{}, errors.New("健康登记出现异常")
+	} else {
+		key_value.Field = string(match2[1])
+		key_value.Value = string(match2[2])
+		log.Printf("获取到当前打卡%s(ID)：%s\n", key_value.Field, key_value.Value)
 	}
-	var key_value = model.FieldAndValue{}
-	key_value.Field = string(match2[1])
-	key_value.Value = string(match2[2])
-	log.Printf("获取到当前打卡%s(ID)：%s\n", key_value.Field, key_value.Value)
+	//匹配是否出现异常
+	re := regexp.MustCompile("异常")
+	match := re.Find(content)
+	if match == nil {
+		//打卡无异常
+		return key_value, nil
+	}
+	log.Println("健康登记出现异常，可能是程序的错误或正处于风险区！")
+	color.Red("健康登记出现异常，可能是程序的错误或正处于风险区！")
 	return key_value, errors.New("健康登记出现异常")
 }
 
