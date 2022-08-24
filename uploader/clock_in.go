@@ -82,8 +82,6 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 }
 
 func Cancel_Clock_In(key_value model.FieldAndValue, client *http.Client) error {
-	log.Println("健康登记已成功,但出现异常，将自动撤回本次打卡！")
-	color.Red("健康登记已成功,但出现异常，将自动撤回本次打卡！")
 	success := false
 	var err error
 	for i := 0; !success; i++ {
@@ -137,6 +135,3 @@ func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 	}
 	return errors.New("发送删除请求成功,但出现未知的错误！")
 }
-
-//action=add&area=%E9%BE%99%E6%B3%89%E9%A9%BF%E5%8C%BA&city=%E6%88%90%E9%83%BD%E5%B8%82&fare=%E5%90%A6&kesou=%E5%90%A6&province=%E5%9B%9B%E5%B7%9D%E7%9C%81&wls=%E5%90%A6&wuhan=%E5%90%A6&wuhan=%E5%90%A6
-//province=%E5%9B%9B%E5%B7%9D%E7%9C%81&city=%E6%88%90%E9%83%BD%E5%B8%82&area=%E9%BE%99%E6%B3%89%E9%A9%BF%E5%8C%BA&kesou=%E5%90%A6&zhengduan=&fare=%E5%90%A6&wls=%E5%90%A6&wuhan=%E5%90%A6&wuhan=%E5%90%A6&action=add&adds=&addsxy=

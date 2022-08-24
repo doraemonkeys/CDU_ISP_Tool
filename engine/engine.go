@@ -42,6 +42,8 @@ func Run(client http.Client, user model.UserInfo) error {
 	time.Sleep(time.Second)
 	key_value, err := fetcher.CheckingAnomalies(user_no, &client)
 	if err != nil {
+		log.Println("健康登记已成功,但出现异常，将自动撤回本次打卡！")
+		color.Red("健康登记已成功,但出现异常，将自动撤回本次打卡！")
 		err2 := uploader.Cancel_Clock_In(key_value, &client)
 		if err2 != nil {
 			log.Println("自动撤回打卡失败！请前往ISP手动修改！")
