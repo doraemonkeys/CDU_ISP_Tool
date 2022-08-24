@@ -32,6 +32,7 @@ func InitConfig() error {
 		return err
 	}
 	fmt.Println("从网络获取全局配置成功！")
+	log.Println("从网络获取全局配置成功！")
 	//检查自启动
 	model.Auto_Start = CheckAutoStart()
 	if model.Auto_Start {
