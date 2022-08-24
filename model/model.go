@@ -20,6 +20,8 @@ const UserAgent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 
 const Clock_IN_ID string = `projecthealth_del.asp\?([a-z]+[^=])=([0-9a-z]+)"`
 
+const Today_statusRe string = `主动登记[^主]+主动登记`
+
 //程序已经设置自启动
 var Auto_Start bool = false
 

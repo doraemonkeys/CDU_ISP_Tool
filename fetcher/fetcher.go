@@ -2,6 +2,7 @@ package fetcher
 
 import (
 	"ISP_Tool/model"
+	"ISP_Tool/server"
 	"ISP_Tool/utils"
 	"bufio"
 	"errors"
@@ -58,16 +59,13 @@ func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue
 		key_value.Value = string(match2[2])
 		log.Printf("获取到当前打卡%s(ID)：%s\n", key_value.Field, key_value.Value)
 	}
-	//匹配是否出现异常
-	re := regexp.MustCompile("异常")
-	match := re.Find(content)
-	if match == nil {
-		//打卡无异常
-		return key_value, nil
+	err = server.LookForKeyword(content)
+	if err != nil {
+		log.Println("健康登记出现异常，可能是程序的错误或正处于风险区！")
+		color.Red("健康登记出现异常，可能是程序的错误或正处于风险区！")
+		return key_value, err
 	}
-	log.Println("健康登记出现异常，可能是程序的错误或正处于风险区！")
-	color.Red("健康登记出现异常，可能是程序的错误或正处于风险区！")
-	return key_value, errors.New("健康登记出现异常")
+	return key_value, nil
 }
 
 func Get_User_Nonce(client *http.Client) (string, error) {

@@ -1,12 +1,15 @@
 package server
 
 import (
+	"ISP_Tool/model"
 	"ISP_Tool/utils"
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -66,4 +69,33 @@ func CheckAutoStart() bool {
 		return false
 	}
 	return false
+}
+
+//在打卡后的界面寻找异常关键字
+func LookForKeyword(content []byte) error {
+	re3 := regexp.MustCompile(model.Today_statusRe)
+	Today_status := re3.Find(content)
+	if Today_status == nil {
+		//可能是第一次打卡,进行全局匹配是否出现异常
+		re := regexp.MustCompile("异常")
+		match := re.Find(content)
+		if match == nil {
+			//打卡无异常
+			return nil
+		}
+		return errors.New("健康登记出现异常")
+	}
+	//下面匹配两次关键字(冗余操作防止意外)
+	re4 := regexp.MustCompile("异常")
+	match4 := re4.Find(Today_status)
+	if match4 != nil {
+		return errors.New("健康登记出现异常")
+	}
+	re5 := regexp.MustCompile("color=red")
+	match5 := re5.Find(Today_status)
+	if match5 != nil {
+		return errors.New("健康登记出现异常")
+	}
+	//打卡无异常
+	return nil
 }
