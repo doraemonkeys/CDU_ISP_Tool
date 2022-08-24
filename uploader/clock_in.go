@@ -18,6 +18,18 @@ import (
 func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	//today := time.Now().Local().Format("2006年1月2日")
 	apiUrl := model.All.ClockIn.ClockInUrl
+	//URL param
+	// queryData := url.Values{}
+	// queryData.Set("id", user.UserNonce)
+	// queryData.Set("id2", today)
+	// u, err := url.ParseRequestURI(apiUrl)
+	// if err != nil {
+	// 	fmt.Printf("parse url requestUrl failed, err:%v\n", err)
+	// 	log.Printf("parse url requestUrl failed, err:%v\n", err)
+	// 	return err
+	// }
+	// u.RawQuery = queryData.Encode() // URL encode
+
 	// 构造请求
 	param := url.Values{}
 	param.Set(model.All.ClockIn.AreaField, user.Area)
