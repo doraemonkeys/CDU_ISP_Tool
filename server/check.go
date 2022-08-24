@@ -92,7 +92,7 @@ func LookForKeyword(content []byte) error {
 		return errors.New("健康登记出现异常")
 	}
 	re5 := regexp.MustCompile("color=red")
-	match5 := re5.Find(Today_status)
+	match5 := re5.FindAll(Today_status, -1)
 	if len(match5) > 1 { //删除按钮也是红色的
 		return errors.New("健康登记出现异常")
 	}
