@@ -20,10 +20,10 @@ import (
 
 //检查打卡是否异常
 func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue, error) {
-	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth.asp"
+	apiUrl := model.All.ClockInHome.ClockInHomeUrl
 	// URL param
 	queryData := url.Values{}
-	queryData.Set("id", user_no)
+	queryData.Set(model.All.ClockInHome.QueryField, user_no)
 	u, err := url.ParseRequestURI(apiUrl)
 	if err != nil {
 		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
@@ -32,9 +32,9 @@ func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue
 	}
 	u.RawQuery = queryData.Encode() // URL encode
 
-	request, _ := http.NewRequest("GET", u.String(), nil)
-	request.Header.Set("authority", "xsswzx.cdu.edu.cn")
-	request.Header.Set("content-type", "application/x-www-form-urlencoded")
+	request, _ := http.NewRequest(model.All.ClockInHome.Head.Method, u.String(), nil)
+	request.Header.Set("authority", model.All.ClockInHome.Head.Authority)
+	request.Header.Set("content-type", model.All.ClockInHome.Head.Content_type)
 	request.Header.Set("user-agent", model.UserAgent)
 	resp, err := client.Do(request)
 	if err != nil {
@@ -69,11 +69,11 @@ func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue
 }
 
 func Get_User_Nonce(client *http.Client) (string, error) {
-	request, _ := http.NewRequest("GET", "https://xsswzx.cdu.edu.cn/ispstu/com_user/webindex.asp", nil)
-	request.Header.Set("authority", "xsswzx.cdu.edu.cn")
-	request.Header.Set("content-type", "application/x-www-form-urlencoded")
+	request, _ := http.NewRequest(model.All.ISPHome.Head.Method, model.All.ISPHome.ISPHomeUrl, nil)
+	request.Header.Set("authority", model.All.ISPHome.Head.Authority)
+	request.Header.Set("content-type", model.All.ISPHome.Head.Content_type)
 	request.Header.Set("user-agent", model.UserAgent)
-	request.Header.Set("referer", "https://xsswzx.cdu.edu.cn/ispstu/com_user/weblogin.asp")
+	request.Header.Set("referer", model.All.ISPHome.Head.Referer)
 
 	resp, err := client.Do(request)
 	if err != nil {
@@ -173,10 +173,10 @@ func Get_IP_Loaction() (model.Location, error) {
 }
 
 func Get_isp_location_history(user_no string, client *http.Client) (model.Location, error) {
-	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth.asp"
+	apiUrl := model.All.ClockInHome.ClockInHomeUrl
 	// URL param
 	queryData := url.Values{}
-	queryData.Set("id", user_no)
+	queryData.Set(model.All.ClockInHome.QueryField, user_no)
 	u, err := url.ParseRequestURI(apiUrl)
 	if err != nil {
 		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
@@ -185,9 +185,9 @@ func Get_isp_location_history(user_no string, client *http.Client) (model.Locati
 	}
 	u.RawQuery = queryData.Encode() // URL encode
 
-	request, _ := http.NewRequest("GET", u.String(), nil)
-	request.Header.Set("authority", "xsswzx.cdu.edu.cn")
-	request.Header.Set("content-type", "application/x-www-form-urlencoded")
+	request, _ := http.NewRequest(model.All.ClockInHome.Head.Method, u.String(), nil)
+	request.Header.Set("authority", model.All.ClockInHome.Head.Authority)
+	request.Header.Set("content-type", model.All.ClockInHome.Head.Content_type)
 	request.Header.Set("user-agent", model.UserAgent)
 	resp, err := client.Do(request)
 	if err != nil {

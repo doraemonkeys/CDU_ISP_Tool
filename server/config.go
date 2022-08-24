@@ -24,6 +24,15 @@ func InitConfig() error {
 		log.Println("创建程序配置文件夹失败！", err)
 		fmt.Println("创建程序配置文件夹失败！", err)
 	}
+	//从网络获取全局配置
+	err = GetConfig()
+	if err != nil {
+		log.Println("从网络获取程序配置文件失败！", err)
+		fmt.Println("从网络获取程序配置文件失败！", err)
+		return err
+	}
+	fmt.Println("从网络获取全局配置成功！")
+	//检查自启动
 	model.Auto_Start = CheckAutoStart()
 	if model.Auto_Start {
 		if TodayClockInSuccess() {
@@ -114,6 +123,19 @@ func RebuitConfig(users []model.UserInfo) error {
 		}
 		data = append(data, '\n')
 		config.Write(data)
+	}
+	return nil
+}
+
+//从网络获取全局配置
+func GetConfig() error {
+	content, err := utils.Fetch("https://gitee.com/doraemonkey/json_isp/raw/master/json.txt")
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(content, &model.All)
+	if err != nil {
+		return err
 	}
 	return nil
 }

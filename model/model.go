@@ -31,6 +31,27 @@ var Auto_Clock_IN_Success bool = false
 //用户是否使用本程序修改了用户账号配置
 var UserConfigChanged bool = false
 
+//全局配置
+var All = AllMsg{}
+
+type Header struct {
+	Method       string
+	Authority    string
+	Content_type string
+	User_agent   string
+	Referer      string
+}
+
+type LoginMsg struct {
+	LoginWebUrl string
+	LoginUrl    string
+	Input1Field string //学号对应字段
+	Input2Field string //密码对应字段
+	Input3Field string //验证码对应字段
+	Other       []FieldAndValue
+	Head        Header
+}
+
 type UserInfo struct {
 	UserName  string
 	UserID    string
@@ -49,4 +70,38 @@ type Location struct {
 type FieldAndValue struct {
 	Field string
 	Value string
+}
+
+type ISPHomeMsg struct {
+	ISPHomeUrl string
+	Head       Header
+}
+
+type ClockInHomeMsg struct {
+	ClockInHomeUrl string
+	QueryField     string
+	Head           Header
+}
+
+type ClockInMsg struct {
+	ClockInUrl    string
+	Head          Header
+	ProvinceField string
+	CityField     string
+	AreaField     string
+	Other         []FieldAndValue
+}
+
+type CancelMsg struct {
+	CancelUrl string
+	Head      Header
+}
+
+type AllMsg struct {
+	User        UserInfo
+	Login       LoginMsg
+	ISPHome     ISPHomeMsg
+	ClockInHome ClockInHomeMsg
+	ClockIn     ClockInMsg
+	Cancel      CancelMsg
 }

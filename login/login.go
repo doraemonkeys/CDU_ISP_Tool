@@ -24,17 +24,23 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	}
 	fmt.Println("成功获取登录验证码:", code)
 	log.Println("成功获取登录验证码:", code)
-	data := "username=" + user.UserID
-	data = data + "&userpwd=" + user.UserPwd
-	data = data + "&code=" + code
-	data = data + "&login=login&checkcode=1&rank=0&action=login&m5=1"
-	request, _ := http.NewRequest("POST",
-		"https://xsswzx.cdu.edu.cn/ispstu/com_user/weblogin.asp", strings.NewReader(data))
+	// data := "username=" + user.UserID
+	// data = data + "&userpwd=" + user.UserPwd
+	// data = data + "&code=" + code
+	// data = data + "&login=login&checkcode=1&rank=0&action=login&m5=1"
+	data2 := model.All.Login.Input1Field + "=" + user.UserID
+	data2 = data2 + "&" + model.All.Login.Input2Field + "=" + user.UserPwd
+	data2 = data2 + "&" + model.All.Login.Input3Field + "=" + code
+	for _, v := range model.All.Login.Other {
+		data2 = data2 + "&" + v.Field + "=" + v.Value
+	}
+	request, _ := http.NewRequest(model.All.Login.Head.Method,
+		model.All.Login.LoginUrl, strings.NewReader(data2))
 
-	request.Header.Set("authority", "xsswzx.cdu.edu.cn")
-	request.Header.Set("content-type", "application/x-www-form-urlencoded")
+	request.Header.Set("authority", model.All.Login.Head.Authority)
+	request.Header.Set("content-type", model.All.Login.Head.Content_type)
 	request.Header.Set("user-agent", model.UserAgent)
-	request.Header.Set("referer", "https://xsswzx.cdu.edu.cn/ispstu/com_user/login.asp")
+	request.Header.Set("referer", model.All.Login.Head.Referer)
 	// 发起登录请求
 	resp, err := client.Do(request)
 	if err != nil {

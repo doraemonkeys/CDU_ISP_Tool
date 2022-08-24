@@ -11,7 +11,8 @@ import (
 )
 
 func Get_ISP_Login_code(client *http.Client) (string, error) {
-	req, _ := http.NewRequest("GET", "https://xsswzx.cdu.edu.cn/ispstu/com_user/weblogin.asp", nil)
+
+	req, _ := http.NewRequest("GET", model.All.Login.LoginWebUrl, nil)
 	req.Header.Set("User-Agent", model.UserAgent)
 
 	resp, err := client.Do(req)

@@ -17,40 +17,41 @@ import (
 
 func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	//today := time.Now().Local().Format("2006年1月2日")
-	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_add.asp"
-	//URL param
-	// queryData := url.Values{}
-	// queryData.Set("id", user.UserNonce)
-	// queryData.Set("id2", today)
-	// u, err := url.ParseRequestURI(apiUrl)
-	// if err != nil {
-	// 	fmt.Printf("parse url requestUrl failed, err:%v\n", err)
-	// 	log.Printf("parse url requestUrl failed, err:%v\n", err)
-	// 	return err
-	// }
-	// u.RawQuery = queryData.Encode() // URL encode
+	apiUrl := model.All.ClockIn.ClockInUrl
 	// 构造请求
 	param := url.Values{}
-	param.Set("action", "add")
-	param.Set("area", user.Area)
-	param.Set("city", user.City)
-	param.Set("province", user.Province)
-	param.Set("fare", "否")
-	param.Set("kesou", "否")
-	param.Set("wls", "否")
-	param.Set("wuhan", "否")
+	param.Set(model.All.ClockIn.AreaField, user.Area)
+	param.Set(model.All.ClockIn.CityField, user.City)
+	param.Set(model.All.ClockIn.ProvinceField, user.Province)
 	param2 := url.Values{}
-	param2.Set("wuhan", "否")
+	for _, v := range model.All.ClockIn.Other {
+		if param.Has(v.Field) {
+			param2.Set(v.Field, v.Value) //用于存放重复的变量(最多两个)
+		} else {
+			param.Set(v.Field, v.Value)
+		}
+	}
+	data := param.Encode()
+	if len(param2) != 0 {
+		data = data + "&" + param2.Encode()
+	}
+	// param.Set("action", "add")
+	// param.Set("fare", "否")
+	// param.Set("kesou", "否")
+	// param.Set("wls", "否")
+	// param.Set("wuhan", "否")
+	// param2 := url.Values{}
+	// param2.Set("wuhan", "否")
 	// param.Set("adds", "")
 	// param.Set("addsxy", "")
 	// param.Set("zhengduan", "")
 	//data := param.Encode() + "&" + param2.Encode() + "&zhengduan=&adds=&addsxy="
-	data := param.Encode() + "&" + param2.Encode()
+	//data := param.Encode() + "&" + param2.Encode()
 	//req4, _ := http.NewRequest("POST", u.String(), strings.NewReader(data))
-	req4, _ := http.NewRequest("POST", apiUrl, strings.NewReader(data))
-	req4.Header.Set("authority", "xsswzx.cdu.edu.cn")
-	req4.Header.Set("content-type", "application/x-www-form-urlencoded")
-	req4.Header.Set("referer", "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_add.asp")
+	req4, _ := http.NewRequest(model.All.ClockIn.Head.Method, apiUrl, strings.NewReader(data))
+	req4.Header.Set("authority", model.All.ClockIn.Head.Authority)
+	req4.Header.Set("content-type", model.All.ClockIn.Head.Content_type)
+	req4.Header.Set("referer", model.All.ClockIn.Head.Referer)
 	req4.Header.Set("user-agent", model.UserAgent)
 
 	resp4, err := client.Do(req4)
@@ -99,8 +100,8 @@ func Cancel_Clock_In(key_value model.FieldAndValue, client *http.Client) error {
 }
 
 func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
-	//apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth.asp"
-	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_del.asp"
+	//apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_del.asp"
+	apiUrl := model.All.Cancel.CancelUrl
 	// URL param
 	queryData := url.Values{}
 	queryData.Set(key_value.Field, key_value.Value)
@@ -112,7 +113,7 @@ func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 	}
 	u.RawQuery = queryData.Encode() // URL encode
 
-	request, _ := http.NewRequest("GET", u.String(), nil)
+	request, _ := http.NewRequest(model.All.Cancel.Head.Method, u.String(), nil)
 	//request.Header.Set("authority", "xsswzx.cdu.edu.cn")
 	//request.Header.Set("content-type", "application/x-www-form-urlencoded")
 	request.Header.Set("user-agent", model.UserAgent)
