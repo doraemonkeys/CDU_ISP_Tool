@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -34,8 +35,19 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	for _, v := range model.All.Login.Other {
 		data2 = data2 + "&" + v.Field + "=" + v.Value
 	}
+	param := url.Values{}
+	param.Set(model.All.Login.Input1Field, user.UserID)
+	param.Set(model.All.Login.Input2Field, user.UserPwd)
+	param.Set(model.All.Login.Input3Field, code)
+	data := param.Encode()
+	//支持构造重复字段
+	for _, v := range model.All.Login.Other {
+		param = url.Values{}
+		param.Set(v.Field, v.Value)
+		data = data + "&" + param.Encode()
+	}
 	request, _ := http.NewRequest(model.All.Login.Head.Method,
-		model.All.Login.LoginUrl, strings.NewReader(data2))
+		model.All.Login.LoginUrl, strings.NewReader(data))
 
 	request.Header.Set("authority", model.All.Login.Head.Authority)
 	request.Header.Set("content-type", model.All.Login.Head.Content_type)

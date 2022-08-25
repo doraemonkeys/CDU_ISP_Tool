@@ -35,17 +35,12 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	param.Set(model.All.ClockIn.AreaField, user.Area)
 	param.Set(model.All.ClockIn.CityField, user.City)
 	param.Set(model.All.ClockIn.ProvinceField, user.Province)
-	param2 := url.Values{}
-	for _, v := range model.All.ClockIn.Other {
-		if param.Has(v.Field) {
-			param2.Set(v.Field, v.Value) //用于存放重复的变量(最多两个)
-		} else {
-			param.Set(v.Field, v.Value)
-		}
-	}
 	data := param.Encode()
-	if len(param2) != 0 {
-		data = data + "&" + param2.Encode()
+	//支持构造重复字段
+	for _, v := range model.All.ClockIn.Other {
+		param = url.Values{}
+		param.Set(v.Field, v.Value)
+		data = data + "&" + param.Encode()
 	}
 	// param.Set("action", "add")
 	// param.Set("fare", "否")
