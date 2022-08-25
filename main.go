@@ -23,14 +23,6 @@ func main() {
 		fmt.Println("配置文件初始化失败！")
 	}
 	for {
-		newClient, err := utils.Get_client()
-		if err != nil {
-			log.Println("创建虚拟客户端失败！", err)
-			fmt.Println("创建虚拟客户端失败！", err)
-			//等待用户关闭
-			time.Sleep(time.Hour * 2)
-			return
-		}
 		users, err := server.GetUserInfos()
 		if err != nil {
 			log.Println("GetUserInfos Error", err)
@@ -38,6 +30,7 @@ func main() {
 		}
 		errConut := 0 //打卡失败数量
 		for _, user := range users {
+			newClient, _ := utils.Get_client()
 			err := engine.Run(newClient, user)
 			if err != nil && err.Error() != "健康登记打卡已存在" {
 				fmt.Println()
