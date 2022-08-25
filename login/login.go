@@ -77,14 +77,14 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 		fmt.Println("读取登录返回界面失败！", err)
 		return err
 	}
-	re := regexp.MustCompile("密码错误")
+	re := regexp.MustCompile(model.All.Regexp.PwdErrorRe)
 	match := re.FindSubmatch(content)
 	if match != nil {
 		log.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
 		fmt.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
 		return errors.New("账号或者密码错误")
 	}
-	re = regexp.MustCompile("非在校学生")
+	re = regexp.MustCompile(model.All.Regexp.IsNotStudentRe)
 	match = re.FindSubmatch(content)
 	if match != nil {
 		log.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)

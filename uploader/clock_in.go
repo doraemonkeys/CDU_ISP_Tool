@@ -74,12 +74,12 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 		return err
 	}
 	//fmt.Println(string(content4))
-	re := regexp.MustCompile("提交成功")
+	re := regexp.MustCompile(model.All.Regexp.Clock_In_success_Re)
 	match := re.Find(content4)
 	if match != nil {
 		return nil
 	}
-	re = regexp.MustCompile("登记已存在")
+	re = regexp.MustCompile(model.All.Regexp.Already_Clock_In_Re)
 	match = re.Find(content4)
 	if match != nil {
 		log.Println(user.UserID, "健康登记打卡已存在")
@@ -136,7 +136,7 @@ func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 		fmt.Println("读取ISP页面内容失败！", err)
 		return err
 	}
-	re := regexp.MustCompile("成功")
+	re := regexp.MustCompile(model.All.Regexp.CancelSuccessRe)
 	match := re.Find(content)
 	if match != nil {
 		return nil

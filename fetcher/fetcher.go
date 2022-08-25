@@ -50,7 +50,7 @@ func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue
 	}
 	//匹配撤回打卡key-value字段
 	var key_value = model.FieldAndValue{}
-	re2 := regexp.MustCompile(model.Clock_IN_ID)
+	re2 := regexp.MustCompile(model.All.Regexp.Clock_IN_ID_Re)
 	match2 := re2.FindSubmatch(content)
 	if len(match2) != 3 {
 		log.Println("获取撤回打卡key-value字段失败,可能是ISP结构发生变化，请联系开发者。")
@@ -86,7 +86,7 @@ func Get_User_Nonce(client *http.Client) (string, error) {
 		fmt.Println("读取ISP主页(webindex.asp)失败！", err)
 		return "", err
 	}
-	re := regexp.MustCompile(model.User_no_RE)
+	re := regexp.MustCompile(model.All.Regexp.User_no_Re)
 	match := re.FindSubmatch(content)
 	var user_no string
 	if match == nil {
@@ -148,7 +148,7 @@ func Get_IP_Loaction() (model.Location, error) {
 		fmt.Println("读取网页ip138.com失败！", err)
 		return model.Location{}, err
 	}
-	re := regexp.MustCompile(model.Ip_locationRe)
+	re := regexp.MustCompile(model.All.Regexp.Ip_locationRe)
 	match := re.FindSubmatch(content)
 	if match == nil {
 		log.Println("匹配IP地址信息失败！请联系开发者。")
@@ -201,7 +201,7 @@ func Get_isp_location_history(user_no string, client *http.Client) (model.Locati
 		fmt.Println("读取ISP页面内容失败！", err)
 		return model.Location{}, err
 	}
-	re := regexp.MustCompile(model.Isp_history_location_Re)
+	re := regexp.MustCompile(model.All.Regexp.Isp_history_location_Re)
 	match := re.FindSubmatch(content)
 	if match == nil {
 		log.Println("匹配ISP历史登记地址信息失败！可能是ISP结构发生变化，请联系开发者。")
