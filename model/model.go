@@ -58,6 +58,8 @@ type UserInfo struct {
 	UserPwd   string
 	UserNonce string //对应isp的user_no字段
 	Location
+	//1表示使用ip地址(默认)，2表示使用isp历史打卡地址。若配置文件已设置地址，则优先使用配置文件地址
+	ChooseLocation int
 }
 
 type Location struct {
