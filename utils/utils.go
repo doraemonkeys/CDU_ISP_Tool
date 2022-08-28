@@ -201,3 +201,26 @@ func ColorPrint(attributes []color.Attribute, strs ...string) {
 func Utf8ToANSI(text string) string {
 	return mahonia.NewEncoder("GB18030").ConvertString(text)
 }
+
+//不会对内容转码
+func Fetch(url string) ([]byte, error) {
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	//在浏览器中找到request.Header(请求头)中的User-Agent,把值复制下来
+	//add key value
+	request.Header.Add("User-Agent",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+	//模拟客户端发送请求
+	response, err := http.DefaultClient.Do(request)
+	//response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New(http.StatusText(response.StatusCode))
+	}
+	return ioutil.ReadAll(response.Body)
+}

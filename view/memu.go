@@ -66,7 +66,7 @@ func Clock_IN_Failed(user model.UserInfo) {
 
 func Auto_Clock_IN_Success() {
 	fmt.Println("**************************************************************")
-	color.HiGreen(">>>>>>>>>>>>>>> 已经自动打卡成功！")
+	color.HiGreen(">>>>>>>>>>>>>>> 自动打卡已经成功！")
 	fmt.Println("**************************************************************")
 }
 
@@ -91,8 +91,9 @@ func EndSlect() {
 	utils.ColorPrint(attributes[:], "[", "3", "]  为添加的用户重新打卡\n")
 	utils.ColorPrint(attributes[:], "[", "4", "]  清空账号\n")
 	utils.ColorPrint(attributes[:], "[", "5", "]  开启/关闭每日自动打卡\n")
+	utils.ColorPrint(attributes[:], "[", "6", "]  切换打卡地址选择方式\n")
 	fmt.Println()
 	attributes2 := [4]color.Attribute{}
 	attributes2[1] = color.FgRed
-	utils.ColorPrint(attributes2[:], "请选择 【", "0 - 5", "】:\n")
+	utils.ColorPrint(attributes2[:], "请选择 【", "0 - 6", "】:\n")
 }

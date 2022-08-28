@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -24,17 +25,34 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	}
 	fmt.Println("成功获取登录验证码:", code)
 	log.Println("成功获取登录验证码:", code)
-	data := "username=" + user.UserID
-	data = data + "&userpwd=" + user.UserPwd
-	data = data + "&code=" + code
-	data = data + "&login=login&checkcode=1&rank=0&action=login&m5=1"
-	request, _ := http.NewRequest("POST",
-		"https://xsswzx.cdu.edu.cn/ispstu/com_user/weblogin.asp", strings.NewReader(data))
+	// data := "username=" + user.UserID
+	// data = data + "&userpwd=" + user.UserPwd
+	// data = data + "&code=" + code
+	// data = data + "&login=login&checkcode=1&rank=0&action=login&m5=1"
+	data2 := model.All.Login.Input1Field + "=" + user.UserID
+	data2 = data2 + "&" + model.All.Login.Input2Field + "=" + user.UserPwd
+	data2 = data2 + "&" + model.All.Login.Input3Field + "=" + code
+	for _, v := range model.All.Login.Other {
+		data2 = data2 + "&" + v.Field + "=" + v.Value
+	}
+	param := url.Values{}
+	param.Set(model.All.Login.Input1Field, user.UserID)
+	param.Set(model.All.Login.Input2Field, user.UserPwd)
+	param.Set(model.All.Login.Input3Field, code)
+	data := param.Encode()
+	//支持构造重复字段
+	for _, v := range model.All.Login.Other {
+		param = url.Values{}
+		param.Set(v.Field, v.Value)
+		data = data + "&" + param.Encode()
+	}
+	request, _ := http.NewRequest(model.All.Login.Head.Method,
+		model.All.Login.LoginUrl, strings.NewReader(data))
 
-	request.Header.Set("authority", "xsswzx.cdu.edu.cn")
-	request.Header.Set("content-type", "application/x-www-form-urlencoded")
+	request.Header.Set("authority", model.All.Login.Head.Authority)
+	request.Header.Set("content-type", model.All.Login.Head.Content_type)
 	request.Header.Set("user-agent", model.UserAgent)
-	request.Header.Set("referer", "https://xsswzx.cdu.edu.cn/ispstu/com_user/login.asp")
+	request.Header.Set("referer", model.All.Login.Head.Referer)
 	// 发起登录请求
 	resp, err := client.Do(request)
 	if err != nil {
@@ -59,14 +77,14 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 		fmt.Println("读取登录返回界面失败！", err)
 		return err
 	}
-	re := regexp.MustCompile("密码错误")
+	re := regexp.MustCompile(model.All.Regexp.PwdErrorRe)
 	match := re.FindSubmatch(content)
 	if match != nil {
 		log.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
 		fmt.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
 		return errors.New("账号或者密码错误")
 	}
-	re = regexp.MustCompile("非在校学生")
+	re = regexp.MustCompile(model.All.Regexp.IsNotStudentRe)
 	match = re.FindSubmatch(content)
 	if match != nil {
 		log.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)

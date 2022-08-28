@@ -17,7 +17,7 @@ import (
 
 func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	//today := time.Now().Local().Format("2006年1月2日")
-	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_add.asp"
+	apiUrl := model.All.ClockIn.ClockInUrl
 	//URL param
 	// queryData := url.Values{}
 	// queryData.Set("id", user.UserNonce)
@@ -29,28 +29,36 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	// 	return err
 	// }
 	// u.RawQuery = queryData.Encode() // URL encode
+
 	// 构造请求
 	param := url.Values{}
-	param.Set("action", "add")
-	param.Set("area", user.Area)
-	param.Set("city", user.City)
-	param.Set("province", user.Province)
-	param.Set("fare", "否")
-	param.Set("kesou", "否")
-	param.Set("wls", "否")
-	param.Set("wuhan", "否")
-	param2 := url.Values{}
-	param2.Set("wuhan", "否")
+	param.Set(model.All.ClockIn.AreaField, user.Area)
+	param.Set(model.All.ClockIn.CityField, user.City)
+	param.Set(model.All.ClockIn.ProvinceField, user.Province)
+	data := param.Encode()
+	//支持构造重复字段
+	for _, v := range model.All.ClockIn.Other {
+		param = url.Values{}
+		param.Set(v.Field, v.Value)
+		data = data + "&" + param.Encode()
+	}
+	// param.Set("action", "add")
+	// param.Set("fare", "否")
+	// param.Set("kesou", "否")
+	// param.Set("wls", "否")
+	// param.Set("wuhan", "否")
+	// param2 := url.Values{}
+	// param2.Set("wuhan", "否")
 	// param.Set("adds", "")
 	// param.Set("addsxy", "")
 	// param.Set("zhengduan", "")
 	//data := param.Encode() + "&" + param2.Encode() + "&zhengduan=&adds=&addsxy="
-	data := param.Encode() + "&" + param2.Encode()
+	//data := param.Encode() + "&" + param2.Encode()
 	//req4, _ := http.NewRequest("POST", u.String(), strings.NewReader(data))
-	req4, _ := http.NewRequest("POST", apiUrl, strings.NewReader(data))
-	req4.Header.Set("authority", "xsswzx.cdu.edu.cn")
-	req4.Header.Set("content-type", "application/x-www-form-urlencoded")
-	req4.Header.Set("referer", "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_add.asp")
+	req4, _ := http.NewRequest(model.All.ClockIn.Head.Method, apiUrl, strings.NewReader(data))
+	req4.Header.Set("authority", model.All.ClockIn.Head.Authority)
+	req4.Header.Set("content-type", model.All.ClockIn.Head.Content_type)
+	req4.Header.Set("referer", model.All.ClockIn.Head.Referer)
 	req4.Header.Set("user-agent", model.UserAgent)
 
 	resp4, err := client.Do(req4)
@@ -66,12 +74,12 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 		return err
 	}
 	//fmt.Println(string(content4))
-	re := regexp.MustCompile("提交成功")
+	re := regexp.MustCompile(model.All.Regexp.Clock_In_success_Re)
 	match := re.Find(content4)
 	if match != nil {
 		return nil
 	}
-	re = regexp.MustCompile("登记已存在")
+	re = regexp.MustCompile(model.All.Regexp.Already_Clock_In_Re)
 	match = re.Find(content4)
 	if match != nil {
 		log.Println(user.UserID, "健康登记打卡已存在")
@@ -99,8 +107,8 @@ func Cancel_Clock_In(key_value model.FieldAndValue, client *http.Client) error {
 }
 
 func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
-	//apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth.asp"
-	apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_del.asp"
+	//apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_del.asp"
+	apiUrl := model.All.Cancel.CancelUrl
 	// URL param
 	queryData := url.Values{}
 	queryData.Set(key_value.Field, key_value.Value)
@@ -112,7 +120,7 @@ func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 	}
 	u.RawQuery = queryData.Encode() // URL encode
 
-	request, _ := http.NewRequest("GET", u.String(), nil)
+	request, _ := http.NewRequest(model.All.Cancel.Head.Method, u.String(), nil)
 	//request.Header.Set("authority", "xsswzx.cdu.edu.cn")
 	//request.Header.Set("content-type", "application/x-www-form-urlencoded")
 	request.Header.Set("user-agent", model.UserAgent)
@@ -128,7 +136,7 @@ func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 		fmt.Println("读取ISP页面内容失败！", err)
 		return err
 	}
-	re := regexp.MustCompile("成功")
+	re := regexp.MustCompile(model.All.Regexp.CancelSuccessRe)
 	match := re.Find(content)
 	if match != nil {
 		return nil
