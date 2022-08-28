@@ -68,8 +68,8 @@ func ProcessEndInput() bool {
 			if model.Auto_Start {
 				err := server.CancelAutoStart()
 				if err != nil {
-					log.Println("关闭自启动失败！")
-					fmt.Println("关闭自启动失败！")
+					log.Println("关闭自启动失败！", err)
+					fmt.Println("关闭自启动失败！", err)
 				} else {
 					fmt.Println("关闭自启动成功！")
 					log.Println("关闭自启动成功！")
@@ -90,10 +90,19 @@ func ProcessEndInput() bool {
 				}
 			}
 			fmt.Println()
+		case "6":
+			err := server.SwitchChooseLocation()
+			if err != nil {
+				log.Println("切换地址选择方式失败！", err)
+				color.Red("切换地址选择方式失败！%s", err.Error())
+			} else {
+				color.HiGreen("切换地址选择方式成功！\n")
+				log.Println("切换地址选择方式成功！")
+			}
 		}
 		fmt.Println()
 		attributes := [4]color.Attribute{}
 		attributes[1] = color.FgRed
-		utils.ColorPrint(attributes[:], "请选择 【", "0 - 5", "】:\n")
+		utils.ColorPrint(attributes[:], "请选择 【", "0 - 6", "】:\n")
 	}
 }

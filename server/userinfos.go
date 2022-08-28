@@ -42,6 +42,7 @@ func firstUse() error {
 	var NewUser = model.UserInfo{}
 	NewUser.UserID = strings.TrimSpace(id)
 	NewUser.UserPwd = strings.TrimSpace(pwd)
+	NewUser.ChooseLocation = 1
 	users = append(users, NewUser)
 	for _, v := range users {
 		data, err := json.Marshal(v)

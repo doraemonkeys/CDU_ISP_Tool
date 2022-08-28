@@ -91,8 +91,9 @@ func EndSlect() {
 	utils.ColorPrint(attributes[:], "[", "3", "]  为添加的用户重新打卡\n")
 	utils.ColorPrint(attributes[:], "[", "4", "]  清空账号\n")
 	utils.ColorPrint(attributes[:], "[", "5", "]  开启/关闭每日自动打卡\n")
+	utils.ColorPrint(attributes[:], "[", "6", "]  切换打卡地址选择方式\n")
 	fmt.Println()
 	attributes2 := [4]color.Attribute{}
 	attributes2[1] = color.FgRed
-	utils.ColorPrint(attributes2[:], "请选择 【", "0 - 5", "】:\n")
+	utils.ColorPrint(attributes2[:], "请选择 【", "0 - 6", "】:\n")
 }

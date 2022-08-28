@@ -215,14 +215,15 @@ func Get_isp_location_history(user_no string, client *http.Client) (model.Locati
 	return newLocation, nil
 }
 
-func GetLocation(user_no string, client *http.Client) (model.Location, error) {
-	isp_location_history, err1 := Get_isp_location_history(user_no, client)
+func GetLocation(user model.UserInfo, client *http.Client) (model.Location, error) {
+	isp_location_history, err1 := Get_isp_location_history(user.UserNonce, client)
 	if err1 != nil {
 		log.Println("获取isp历史打卡信息失败！")
 		fmt.Println("获取isp历史打卡信息失败！")
+		user.ChooseLocation = 1 //只能选择使用ip地址了
 	} else {
-		fmt.Println("历史健康登记打卡地址：",
-			isp_location_history.Province, isp_location_history.City, isp_location_history.Area)
+		fmt.Printf("历史健康登记打卡地址：")
+		color.Yellow("%s %s %s", isp_location_history.Province, isp_location_history.City, isp_location_history.Area)
 		log.Println("历史健康登记打卡地址：",
 			isp_location_history.Province, isp_location_history.City, isp_location_history.Area)
 	}
@@ -230,23 +231,29 @@ func GetLocation(user_no string, client *http.Client) (model.Location, error) {
 	if err2 != nil {
 		log.Println("获取ip地址信息失败！")
 		fmt.Println("获取ip地址信息失败！")
+		user.ChooseLocation = 2 //只能选择使用isp历史打卡地址了
 	} else {
-		fmt.Printf("当前ip地址：")
+		fmt.Printf("当前ip地址：     ")
 		color.Yellow("%s %s %s", IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
 		log.Println("当前ip地址：",
 			IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
 	}
+	//全部出错
 	if err1 != nil && err2 != nil {
-		log.Println("获取地址信息失败,无法打开！")
-		fmt.Println("获取地址信息失败,无法打开！")
+		log.Println("获取地址信息失败,无法打卡！")
+		fmt.Println("获取地址信息失败,无法打卡！")
 		return model.Location{}, errors.New(err1.Error() + err2.Error())
 	}
-	if err2 == nil {
-		fmt.Println("默认使用ip地址信息打卡，如果有错误请前往ISP手动修改！")
-		log.Println("默认使用ip地址信息打卡，如果有错误请前往ISP手动修改！")
+	attributes := [5]color.Attribute{}
+	attributes[0] = color.FgYellow
+	//全部没错或有一个获取失败,获取失败会导致user.ChooseLocation被修改(仅此函数中)
+	if err2 == nil && user.ChooseLocation == 1 {
+		utils.ColorPrint(attributes[:], "使用ip地址信息打卡", "，如果有错误请前往ISP手动修改！\n")
+		log.Println("使用ip地址信息打卡，如果有错误请前往ISP手动修改！")
 		return IP_Loaction, nil
+	} else {
+		utils.ColorPrint(attributes[:], "使用ISP历史登记地址打卡", "，如果有错误请前往ISP手动修改！\n")
+		log.Println("使用ISP历史登记地址打卡，如果有错误请前往ISP手动修改！")
+		return isp_location_history, nil
 	}
-	fmt.Println("使用ISP历史登记信息打卡，如果有错误请前往ISP手动修改！")
-	log.Println("使用ISP历史登记信息打卡，如果有错误请前往ISP手动修改！")
-	return isp_location_history, nil
 }
