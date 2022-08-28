@@ -66,7 +66,7 @@ func Clock_IN_Failed(user model.UserInfo) {
 
 func Auto_Clock_IN_Success() {
 	fmt.Println("**************************************************************")
-	color.HiGreen(">>>>>>>>>>>>>>> 已经自动打卡成功！")
+	color.HiGreen(">>>>>>>>>>>>>>> 自动打卡已经成功！")
 	fmt.Println("**************************************************************")
 }
 
