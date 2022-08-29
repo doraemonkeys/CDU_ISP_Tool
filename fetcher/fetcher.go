@@ -233,7 +233,7 @@ func GetLocation(user model.UserInfo, client *http.Client) (model.Location, erro
 		fmt.Println("获取ip地址信息失败！")
 		user.ChooseLocation = 2 //只能选择使用isp历史打卡地址了
 	} else {
-		fmt.Printf("当前ip地址：     ")
+		fmt.Printf("          当前ip地址：")
 		color.Yellow("%s %s %s", IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
 		log.Println("当前ip地址：",
 			IP_Loaction.Province, IP_Loaction.City, IP_Loaction.Area)
