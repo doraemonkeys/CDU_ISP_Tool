@@ -5,6 +5,7 @@ import (
 	"ISP_Tool/login"
 	"ISP_Tool/model"
 	"ISP_Tool/uploader"
+	"ISP_Tool/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -29,14 +30,10 @@ func Run(client http.Client, user model.UserInfo) error {
 	fmt.Println("从isp获取到用户识别码：", user_no)
 	log.Println("从isp获取到用户识别码：", user_no)
 	user.UserNonce = user_no
-	userLocation, err := fetcher.GetLocation(user, &client)
+	//选择打卡地址
+	err = selectAddress(&user, &client)
 	if err != nil {
-		fmt.Println("ID", user.UserID, "获取地理位置失败！")
 		return err
-	}
-	//若配置文件已设置地址，则优先使用配置文件地址
-	if user.Location.Province == "" {
-		user.Location = userLocation
 	}
 	err = uploader.ISP_Clock_In(&client, user)
 	if err != nil {
@@ -57,6 +54,24 @@ func Run(client http.Client, user model.UserInfo) error {
 			color.HiGreen("自动撤回打卡成功！")
 		}
 		return err
+	}
+	return nil
+}
+
+func selectAddress(user *model.UserInfo, client *http.Client) error {
+	//若配置文件已设置地址，则优先使用配置文件地址
+	if user.Location.Province == "" {
+		userLocation, err := fetcher.GetLocation(*user, client)
+		if err != nil {
+			fmt.Println("ID", user.UserID, "获取地理位置失败！")
+			return err
+		}
+		user.Location = userLocation
+	} else {
+		attributes := [5]color.Attribute{}
+		attributes[0] = color.FgYellow
+		utils.ColorPrint(attributes[:], "使用配置文件中设置的地址打卡", "，如果有错误请前往ISP手动修改！\n")
+		log.Println("使用配置文件中设置的地址打卡，如果有错误请前往ISP手动修改！")
 	}
 	return nil
 }
