@@ -41,11 +41,7 @@
 
 - 如需为账户设置特殊的打卡地址,可以将地址添加在 `配置文件.config`。
 
-
-
-例如，固定账号打卡地址为四川省成都市龙泉驿区:
-
-![](https://raw.githubusercontent.com/Doraemonkeys/picture/master/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202022-08-28%20203019.png)
+  例如，固定账号打卡地址为四川省成都市龙泉驿区:![](https://raw.githubusercontent.com/Doraemonkeys/picture/master/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202022-08-28%20203019.png)
 
 
 
