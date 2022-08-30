@@ -28,8 +28,8 @@ func main() {
 				log.Println("启动打卡程序主体失败！", err)
 			}
 		}
-		//log.Println("自动打卡守护程序休眠半小时")
-		time.Sleep(time.Hour / 2)
+		//time.Sleep(time.Hour / 2)
+		time.Sleep(time.Minute * 2)
 	}
 	log.Println(">>>>>>>>>>>>>>>>>>>>>自动打卡守护程序退出。")
 }
