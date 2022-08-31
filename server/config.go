@@ -26,15 +26,6 @@ func InitConfig() error {
 		log.Println("创建程序配置文件夹失败！", err)
 		fmt.Println("创建程序配置文件夹失败！", err)
 	}
-	//从网络获取全局配置
-	err = GetConfig()
-	if err != nil {
-		log.Println("从网络获取程序配置文件失败！", err)
-		fmt.Println("从网络获取程序配置文件失败！", err)
-		return err
-	}
-	fmt.Println("从网络获取全局配置成功！")
-	log.Println("从网络获取全局配置成功！")
 	//检查自启动
 	model.Auto_Start = CheckAutoStart()
 	if model.Auto_Start {
@@ -69,12 +60,21 @@ func InitConfig() error {
 		time.Sleep(time.Second)
 		//最多检查10次
 		if i == 10 {
-			fmt.Println("网络连接错误，请检查网络配置!")
+			color.Red("网络连接错误，请检查网络配置!")
 			log.Println("网络连接错误，请检查网络配置!")
 			return errors.New("网络连接错误")
 		}
 	}
 	fmt.Println("Net Status , OK!")
+	//从网络获取全局配置
+	err = GetConfig()
+	if err != nil {
+		log.Println("从网络获取程序配置文件失败！", err)
+		fmt.Println("从网络获取程序配置文件失败！", err)
+		return err
+	}
+	fmt.Println("从网络获取全局配置成功！")
+	log.Println("从网络获取全局配置成功！")
 	fmt.Println()
 	fmt.Println()
 	view.Menu()
