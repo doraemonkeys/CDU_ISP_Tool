@@ -158,7 +158,7 @@ func Get_IP_Loaction() (model.Location, error) {
 	if len(match) != 5 {
 		log.Println("匹配IP地址信息失败！请联系开发者。")
 		fmt.Println("匹配IP地址信息失败！请联系开发者。")
-		return model.Location{}, errors.New("match == nil")
+		return model.Location{}, errors.New("len(match) != 5")
 	}
 	newLocation := model.Location{}
 	if string(match[1]) != "中国" {
