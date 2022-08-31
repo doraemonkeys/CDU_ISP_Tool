@@ -20,9 +20,9 @@ func main() {
 		}
 		//检查用户信息配置文件是否存在
 		server.ConfigFileExist()
-		//检查今日自动打卡是否成功
-		if !server.TodayClockInSuccess() {
-			log.Println("检测到自动打卡未成功,正在启动打卡程序。")
+		//检查今日自动打卡是否成功,今日自动打卡是否存在失败记录(已存在则不启动打卡程序)
+		if !server.TodayClockInSuccess() && !server.FailedLogExist() {
+			log.Println("检测到自动打卡未执行,正在启动打卡程序。")
 			err := server.StartNewProgram()
 			if err != nil {
 				log.Println("启动打卡程序主体失败！", err)
