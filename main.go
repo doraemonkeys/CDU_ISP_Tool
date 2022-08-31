@@ -21,7 +21,10 @@ func main() {
 	err := server.InitConfig()
 	if err != nil {
 		fmt.Println("配置文件初始化失败！")
+		time.Sleep(time.Minute)
+		return
 	}
+	//for用于更新配置文件后可能的重新打卡
 	for {
 		users, err := server.GetUserInfos()
 		if err != nil {
