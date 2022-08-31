@@ -28,7 +28,7 @@ import (
 //自动检测html编码,不会减少缓冲器的内容
 func DetermineEncodingbyPeek(r *bufio.Reader) (encoding.Encoding, error) {
 	tempbytes, err := r.Peek(1024)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return nil, err
 	}
 	e, _, _ := charset.DetermineEncoding(tempbytes, "")
