@@ -5,6 +5,7 @@ import (
 	"ISP_Tool/server"
 	"ISP_Tool/utils"
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -148,28 +149,37 @@ func Get_IP_Loaction() (model.Location, error) {
 		fmt.Println("读取网页ip138.com失败！", err)
 		return model.Location{}, err
 	}
+	return find_IP_Loaction_From_html(content)
+}
+
+//从html中寻找ip归属地
+func find_IP_Loaction_From_html(content []byte) (model.Location, error) {
 	re := regexp.MustCompile(model.All.Regexp.Ip_locationRe)
-	match := re.FindSubmatch(content)
+	match := re.FindAllSubmatch(content, -1)
 	if match == nil {
 		log.Println("匹配IP地址信息失败！请联系开发者。")
 		fmt.Println("匹配IP地址信息失败！请联系开发者。")
 		return model.Location{}, errors.New("match == nil")
 	}
-	if len(match) != 5 {
-		log.Println("匹配IP地址信息失败！请联系开发者。")
-		fmt.Println("匹配IP地址信息失败！请联系开发者。")
-		return model.Location{}, errors.New("len(match) != 5")
+	re2 := regexp.MustCompile(model.All.Regexp.ASN_Home)
+	match2 := re2.Find(content)
+	for _, oneMatch := range match {
+		if len(oneMatch) != 5 {
+			log.Println("匹配IP地址信息失败！请联系开发者。")
+			fmt.Println("匹配IP地址信息失败！请联系开发者。")
+			return model.Location{}, errors.New("len(match) != 5")
+		}
+		//如果匹配到的区域是不在ans归属地中,则查看下一条匹配
+		if string(oneMatch[4]) != "" && !bytes.Contains(match2, oneMatch[4]) {
+			continue
+		}
+		newLocation := model.Location{}
+		newLocation.Province = string(oneMatch[2])
+		newLocation.City = string(oneMatch[3])
+		newLocation.Area = string(oneMatch[4])
+		return newLocation, nil
 	}
-	newLocation := model.Location{}
-	if string(match[1]) != "中国" {
-		log.Println("匹配IP地址信息失败！", "国家：", string(match[1]))
-		fmt.Println("匹配IP地址信息失败！", "国家：", string(match[1]))
-		return model.Location{}, errors.New("match[1] != 中国")
-	}
-	newLocation.Province = string(match[2])
-	newLocation.City = string(match[3])
-	newLocation.Area = string(match[4])
-	return newLocation, nil
+	return model.Location{}, errors.New("匹配IP地址信息失败,ip区域与ANS归属地不匹配")
 }
 
 func Get_isp_location_history(user_no string, client *http.Client) (model.Location, error) {
