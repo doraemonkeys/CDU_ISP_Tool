@@ -115,6 +115,7 @@ type RegexpStr struct {
 	Clock_In_success_Re     string //打卡成功
 	Already_Clock_In_Re     string //已打卡
 	CancelSuccessRe         string //取消打卡成功
+	ASN_Home                string //ASN归属地
 }
 
 type AllMsg struct {
