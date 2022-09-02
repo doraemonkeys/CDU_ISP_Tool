@@ -29,23 +29,21 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	// data = data + "&userpwd=" + user.UserPwd
 	// data = data + "&code=" + code
 	// data = data + "&login=login&checkcode=1&rank=0&action=login&m5=1"
-	data2 := model.All.Login.Input1Field + "=" + user.UserID
-	data2 = data2 + "&" + model.All.Login.Input2Field + "=" + user.UserPwd
-	data2 = data2 + "&" + model.All.Login.Input3Field + "=" + code
-	for _, v := range model.All.Login.Other {
-		data2 = data2 + "&" + v.Field + "=" + v.Value
-	}
-	param := url.Values{}
-	param.Set(model.All.Login.Input1Field, user.UserID)
-	param.Set(model.All.Login.Input2Field, user.UserPwd)
-	param.Set(model.All.Login.Input3Field, code)
-	data := param.Encode()
+	// data2 := model.All.Login.Input1Field + "=" + user.UserID
+	// data2 = data2 + "&" + model.All.Login.Input2Field + "=" + user.UserPwd
+	// data2 = data2 + "&" + model.All.Login.Input3Field + "=" + code
+	// for _, v := range model.All.Login.Other {
+	// 	data2 = data2 + "&" + v.Field + "=" + v.Value
+	// }
+	parame := url.Values{}
+	parame.Set(model.All.Login.Input1Field, user.UserID)
+	parame.Set(model.All.Login.Input2Field, user.UserPwd)
+	parame.Set(model.All.Login.Input3Field, code)
 	//支持构造重复字段
 	for _, v := range model.All.Login.Other {
-		param = url.Values{}
-		param.Set(v.Field, v.Value)
-		data = data + "&" + param.Encode()
+		parame.Add(v.Field, v.Value)
 	}
+	data := parame.Encode()
 	request, _ := http.NewRequest(model.All.Login.Head.Method,
 		model.All.Login.LoginUrl, strings.NewReader(data))
 

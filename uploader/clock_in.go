@@ -31,30 +31,15 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	// u.RawQuery = queryData.Encode() // URL encode
 
 	// 构造请求
-	param := url.Values{}
-	param.Set(model.All.ClockIn.AreaField, user.Area)
-	param.Set(model.All.ClockIn.CityField, user.City)
-	param.Set(model.All.ClockIn.ProvinceField, user.Province)
-	data := param.Encode()
-	//支持构造重复字段
+	parame := url.Values{}
+	parame.Set(model.All.ClockIn.AreaField, user.Area)
+	parame.Set(model.All.ClockIn.CityField, user.City)
+	parame.Set(model.All.ClockIn.ProvinceField, user.Province)
+
 	for _, v := range model.All.ClockIn.Other {
-		param = url.Values{}
-		param.Set(v.Field, v.Value)
-		data = data + "&" + param.Encode()
+		parame.Add(v.Field, v.Value)
 	}
-	// param.Set("action", "add")
-	// param.Set("fare", "否")
-	// param.Set("kesou", "否")
-	// param.Set("wls", "否")
-	// param.Set("wuhan", "否")
-	// param2 := url.Values{}
-	// param2.Set("wuhan", "否")
-	// param.Set("adds", "")
-	// param.Set("addsxy", "")
-	// param.Set("zhengduan", "")
-	//data := param.Encode() + "&" + param2.Encode() + "&zhengduan=&adds=&addsxy="
-	//data := param.Encode() + "&" + param2.Encode()
-	//req4, _ := http.NewRequest("POST", u.String(), strings.NewReader(data))
+	data := parame.Encode()
 	req4, _ := http.NewRequest(model.All.ClockIn.Head.Method, apiUrl, strings.NewReader(data))
 	req4.Header.Set("authority", model.All.ClockIn.Head.Authority)
 	req4.Header.Set("content-type", model.All.ClockIn.Head.Content_type)
