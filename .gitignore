@@ -21,3 +21,4 @@
 *.html
 *.json
 *.pdf
+.idea/*
