@@ -175,7 +175,7 @@ func ModifyUserInfos() error {
 		}
 		users = append(users, user)
 	}
-	err = RebuitConfig(users)
+	err = RebuildConfig(users)
 	if err != nil {
 		log.Println("修改配置文件失败！", err)
 		fmt.Println("修改配置文件失败！", err)
@@ -235,7 +235,7 @@ func DeleteUser() error {
 		}
 		users = append(users, user)
 	}
-	err = RebuitConfig(users)
+	err = RebuildConfig(users)
 	if err != nil {
 		log.Println("修改配置文件失败！", err)
 		fmt.Println("修改配置文件失败！", err)

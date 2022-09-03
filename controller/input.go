@@ -53,7 +53,7 @@ func ProcessEndInput() bool {
 		case "3":
 			return true
 		case "4":
-			err := server.RebuitConfig([]model.UserInfo{})
+			err := server.RebuildConfig([]model.UserInfo{})
 			if err != nil {
 				fmt.Println("清空账号失败!")
 				fmt.Println("请自己删除配置文件。")

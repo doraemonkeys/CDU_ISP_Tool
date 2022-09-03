@@ -31,7 +31,7 @@ func main() {
 			log.Println("GetUserInfos Error", err)
 			fmt.Println("GetUserInfos Error", err)
 		}
-		errConut := 0 //打卡失败数量
+		errCount := 0 //打卡失败数量
 		for _, user := range users {
 			newClient, _ := utils.Get_client()
 			err := engine.Run(newClient, user)
@@ -42,7 +42,7 @@ func main() {
 				view.Clock_IN_Failed(user)
 				fmt.Println()
 				fmt.Println()
-				errConut++
+				errCount++
 			} else {
 				fmt.Println()
 				fmt.Println()
@@ -54,9 +54,9 @@ func main() {
 		}
 		//不管打卡成功或者失败，循环一次后都认为配置文件已经执行过一次,用户没有再次修改
 		model.UserConfigChanged = false
-		if errConut != 0 {
-			color.Red("打卡失败数量：%d", errConut)
-			log.Println("打卡失败数量：", errConut)
+		if errCount != 0 {
+			color.Red("打卡失败数量：%d", errCount)
+			log.Println("打卡失败数量：", errCount)
 			if model.Auto_Start && !model.Auto_Clock_IN_Success {
 				server.Inform("健康登记打卡 失败！！！" + " 请手动打卡。")
 				//写入自动打卡日志
@@ -67,7 +67,7 @@ func main() {
 				server.Inform("健康登记打卡 失败！！！" + " 请手动打卡。")
 			}
 		}
-		if errConut == 0 && len(users) != 0 {
+		if errCount == 0 && len(users) != 0 {
 			if model.Auto_Start && !model.Auto_Clock_IN_Success {
 				server.Inform("健康登记打卡 成功！")
 				server.WrittenToTheLog(time.Now().Format("2006/01/02") + " 自动打卡成功")

@@ -109,7 +109,7 @@ func InitConfig() error {
 	return nil
 }
 
-func RebuitConfig(users []model.UserInfo) error {
+func RebuildConfig(users []model.UserInfo) error {
 	config, err := os.OpenFile("./config/配置文件.config", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Println("打开配置文件失败，Error:", err)
@@ -156,8 +156,8 @@ func SetAutoStart() error {
 		log.Println("获取当前文件目录失败！", err)
 		return err
 	}
-	lastindex := strings.LastIndex(path, "\\")
-	path = path[:lastindex]
+	lastIndex := strings.LastIndex(path, "\\")
+	path = path[:lastIndex]
 	path = strings.Replace(path, `\`, `\\`, -1)
 	_, err = file.WriteString(utils.Utf8ToANSI(`Set objShell = CreateObject("WScript.Shell")` + "\n"))
 	if err != nil {
@@ -336,7 +336,7 @@ func SwitchChooseLocation() error {
 		}
 		users = append(users, user)
 	}
-	err = RebuitConfig(users)
+	err = RebuildConfig(users)
 	if err != nil {
 		log.Println("修改配置文件失败！", err)
 		fmt.Println("修改配置文件失败！", err)
