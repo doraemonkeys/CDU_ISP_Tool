@@ -29,7 +29,7 @@ func InitConfig() error {
 	//检查自启动
 	model.Auto_Start = CheckAutoStart()
 	if model.Auto_Start {
-		if TodayClockInSuccess() {
+		if TodayCheckInSuccess() {
 			//已经设置为自启动并且今日打卡已成功
 			log.Println("打卡程序重新运行的原因: 用户手动打开")
 			fmt.Println()

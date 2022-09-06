@@ -15,7 +15,7 @@ import (
 	"github.com/fatih/color"
 )
 
-func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
+func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 	//today := time.Now().Local().Format("2006年1月2日")
 	apiUrl := model.All.ClockIn.ClockInUrl
 	//URL param
@@ -74,7 +74,7 @@ func ISP_Clock_In(client *http.Client, user model.UserInfo) error {
 	return errors.New("CDU-ISP 健康登记打卡 失败")
 }
 
-func Cancel_Clock_In(key_value model.FieldAndValue, client *http.Client) error {
+func CancelCheckIn(key_value model.FieldAndValue, client *http.Client) error {
 	success := false
 	var err error
 	for i := 0; !success; i++ {

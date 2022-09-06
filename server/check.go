@@ -14,23 +14,23 @@ import (
 	"time"
 )
 
-//今日自动打卡是否成功,请确保auto_start.config文件存在
-func TodayClockInSuccess() bool {
-	clockInInfo, err := utils.ReverseRead("./config/auto_start.config", 2)
+//今日自动打卡是否成功,请确保auto_start.config文件存在,不存在可以调用CheckAutoStart()函数创建。
+func TodayCheckInSuccess() bool {
+	checkInInfo, err := utils.ReverseRead("./config/auto_start.config", 2)
 	if err != nil {
 		log.Println("读取自动打卡信息失败！", err)
 		fmt.Println("读取自动打卡信息失败！", err)
 		return false
 	}
-	if len(clockInInfo) == 1 {
-		if clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功" {
+	if len(checkInInfo) == 1 {
+		if checkInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功" {
 			return true
 		}
 	}
-	if strings.TrimSpace(clockInInfo[0]) == "" {
-		return clockInInfo[1] == time.Now().Format("2006/01/02")+" 自动打卡成功"
+	if strings.TrimSpace(checkInInfo[0]) == "" {
+		return checkInInfo[1] == time.Now().Format("2006/01/02")+" 自动打卡成功"
 	}
-	if clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功" {
+	if checkInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功" {
 		return true
 	}
 	return false

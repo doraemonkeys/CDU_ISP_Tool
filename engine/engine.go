@@ -35,7 +35,7 @@ func Run(client http.Client, user model.UserInfo) error {
 	if err != nil {
 		return err
 	}
-	err = uploader.ISP_Clock_In(&client, user)
+	err = uploader.ISP_CheckIn(&client, user)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func Run(client http.Client, user model.UserInfo) error {
 	if err != nil {
 		log.Println("健康登记已成功,但出现异常，将自动撤回本次打卡！")
 		color.Red("健康登记已成功,但出现异常，将自动撤回本次打卡！")
-		err2 := uploader.Cancel_Clock_In(key_value, &client)
+		err2 := uploader.CancelCheckIn(key_value, &client)
 		if err2 != nil {
 			log.Println("自动撤回打卡失败！请前往ISP手动修改！")
 			color.Red("自动撤回打卡失败！请前往ISP手动修改！")
