@@ -108,19 +108,34 @@ func TodayClockInSuccess() bool {
 	return clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功"
 }
 
-//今日自动打卡是否存在失败记录
-func FailedLogExist() bool {
-	clockInInfo, err := utils.ReverseRead("./auto_start.config", 2)
-	if err != nil {
-		log.Println("读取自动打卡信息失败！", err)
-		fmt.Println("读取自动打卡信息失败！", err)
-		return false
+//今日自动打卡失败次数
+func FailedTimes() (int, error) {
+	count := 0
+	for i := 1; ; i++ {
+		oneLine, err := utils.ReadStartWithLastLine("./auto_start.config", i)
+		if err == io.EOF {
+			return count, nil
+		}
+		if err != nil {
+			log.Println("读取自动打卡信息失败！", err)
+			fmt.Println("读取自动打卡信息失败！", err)
+			return -1, err
+		}
+		if strings.TrimSpace(oneLine) == "" {
+			continue
+		}
+		if strings.TrimSpace(oneLine) == time.Now().Format("2006/01/02")+" 自动打卡成功" {
+			return 0, nil
+		}
+		if strings.TrimSpace(oneLine) == time.Now().Format("2006/01/02")+" 自动打卡失败" {
+			count++
+			continue
+		}
+		if strings.TrimSpace(oneLine) == utils.GetYesterday().Format("2006/01/02")+" 自动打卡失败" {
+			return count, nil
+		}
+		if strings.TrimSpace(oneLine) == utils.GetYesterday().Format("2006/01/02")+" 自动打卡成功" {
+			return count, nil
+		}
 	}
-	if len(clockInInfo) == 1 {
-		return clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡失败"
-	}
-	if strings.TrimSpace(clockInInfo[0]) == "" {
-		return clockInInfo[1] == time.Now().Format("2006/01/02")+" 自动打卡失败"
-	}
-	return clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡失败"
 }
