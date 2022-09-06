@@ -88,7 +88,7 @@ func EndSlect() {
 	utils.ColorPrint(attributes[:], "[", "0", "]  删除一个账号\n")
 	utils.ColorPrint(attributes[:], "[", "1", "]  修改账号密码\n")
 	utils.ColorPrint(attributes[:], "[", "2", "]  批量添加账号\n")
-	utils.ColorPrint(attributes[:], "[", "3", "]  为添加的用户重新打卡\n")
+	utils.ColorPrint(attributes[:], "[", "3", "]  重新打卡\n")
 	utils.ColorPrint(attributes[:], "[", "4", "]  清空账号\n")
 	utils.ColorPrint(attributes[:], "[", "5", "]  开启/关闭每日自动打卡\n")
 	utils.ColorPrint(attributes[:], "[", "6", "]  切换打卡地址选择方式\n")
