@@ -29,15 +29,18 @@ func main() {
 			log.Println("GetUserInfos Error", err)
 			fmt.Println("GetUserInfos Error", err)
 		}
-		//打卡失败数量
+		//打卡,返回打卡失败的数量
 		errCount := checkIn(users)
 		//不管打卡成功或者失败，循环一次后都认为配置文件已经执行过一次,用户没有再次修改
 		model.UserConfigChanged = false
+
 		//处理打卡结果
 		workWithCheckInResults(errCount, users)
 		fmt.Println()
+
 		showAutoStartStatus()
 		fmt.Println()
+
 		view.EndSlect()
 		ok := controller.ProcessEndInput()
 		if !ok {
