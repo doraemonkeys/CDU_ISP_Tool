@@ -41,6 +41,8 @@ func Get_ISP_Login_code(client *http.Client) (string, error) {
 	if substr == nil {
 		log.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
 		fmt.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
+		//将页面内容写入到文件用于debug
+		ioutil.WriteFile("loginError.html", content, 0644)
 		return "", errors.New("substr == nil")
 	}
 	return string(substr[1]), nil
