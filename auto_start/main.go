@@ -20,12 +20,27 @@ func main() {
 		}
 		//检查用户信息配置文件是否存在
 		server.ConfigFileExist()
-		//检查今日自动打卡是否成功,今日自动打卡是否存在失败记录(已存在则不启动打卡程序)
-		if !server.TodayClockInSuccess() && !server.FailedLogExist() {
-			log.Println("检测到自动打卡未执行,正在启动打卡程序。")
-			err := server.StartNewProgram()
-			if err != nil {
-				log.Println("启动打卡程序主体失败！", err)
+		//获取今日打卡失败次数
+		failCount, err := server.FailedTimes()
+		if err != nil {
+			log.Println("获取今日打卡失败次数失败，Error:", err)
+			time.Sleep(time.Minute * 2)
+			continue
+		}
+		//第二天到了后,12:10分之后才开始打卡
+		if time.Now().Hour() == 0 && time.Now().Minute() < 10 {
+			time.Sleep(time.Minute)
+			continue
+		}
+		//检查今日自动打卡是否成功,今日自动打卡是否存在失败记录(失败2次则不启动打卡程序),
+		if !server.TodayClockInSuccess() {
+			//如果第一次打卡失败，第二次打卡时间为早上7:00之后
+			if (failCount == 0) || (failCount == 1 && time.Now().Hour() >= 7) {
+				log.Println("检测到自动打卡未执行,正在启动打卡程序。")
+				err := server.StartNewProgram()
+				if err != nil {
+					log.Println("启动打卡程序主体失败！", err)
+				}
 			}
 		}
 		//time.Sleep(time.Hour / 2)
