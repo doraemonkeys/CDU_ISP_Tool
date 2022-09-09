@@ -115,17 +115,23 @@ func LookForKeyword(user model.UserInfo, content []byte) error {
 
 //检查是否有更新,有更新则直接更新
 func CheckUpdate() {
+	//删除旧的更新文件
+	os.Remove("./update.bat")
 	var updateInfo model.Update
 	updateInfo, err := utils.GetUpdateInfo()
 	if err != nil {
 		return
 	}
 	if utils.CompareVersion(updateInfo.MainProgramVersion, model.Version) != 1 {
+		color.Green("当前版本为最新版本！")
 		return
 	}
 	//有更新
+	color.Yellow("检测到新版本,正在尝试更新...")
+	log.Println("检测到新版本,正在尝试更新!")
 	err = Update(updateInfo)
 	if err == nil {
+		log.Println("更新成功！")
 		color.Green("更新成功！程序即将退出！")
 		os.Exit(0)
 	}
@@ -160,6 +166,7 @@ func updateAndRestart(tempName string) error {
 		color.Red("获取当前路径失败！")
 		return err
 	}
+	absPath = filepath.Dir(absPath)
 	programName := filepath.Base(path)
 	//命令1
 	cmd1 := "del " + programName
@@ -167,8 +174,19 @@ func updateAndRestart(tempName string) error {
 	cmd2 := "rename " + tempName + " " + programName
 	//命令3
 	cmd3 := "cmd /c start " + programName
-	_, err = utils.Cmd_NoWait(absPath,
-		[]string{"ping -n 4 127.1>nul", "&", cmd1, "&", cmd2, "&", cmd3})
+	f, err := os.Create("update.bat")
+	if err != nil {
+		log.Println("创建批处理文件失败！", err)
+		color.Red("创建批处理文件失败！")
+		return err
+	}
+	_, err = f.WriteString("ping -n 2 127.1>nul" + " & " + cmd1 + " & " + cmd2 + " & " + cmd3 + " & exit")
+	if err != nil {
+		log.Println("写入批处理文件失败！", err)
+		color.Red("写入批处理文件失败！")
+		return err
+	}
+	err = utils.CmdNoOutput(absPath, []string{"cmd /c start .\\update.bat", "&", "exit"})
 	if err != nil {
 		log.Println("更新失败！", err)
 		color.Red("更新失败！")
@@ -184,6 +202,8 @@ func checkFile(tempName string, updateInfo model.Update) error {
 		color.Red("获取更新文件MD5失败！")
 		return err
 	}
+	md5 = strings.ToUpper(md5)
+	updateInfo.MainProgramMd5 = strings.ToUpper(updateInfo.MainProgramMd5)
 	if md5 != updateInfo.MainProgramMd5 {
 		log.Println("更新文件MD5校验失败！")
 		color.Red("更新文件MD5校验失败！")
@@ -194,15 +214,15 @@ func checkFile(tempName string, updateInfo model.Update) error {
 
 func downloadUpdate(updateInfo model.Update) (string, error) {
 	tempName := "temp.exe"
-	if updateInfo.DirectUrl != "" {
-		err := utils.DownloadFile(updateInfo.DirectUrl, tempName)
+	if updateInfo.MainProgramDirectUrl != "" {
+		err := utils.DownloadFile(updateInfo.MainProgramDirectUrl, tempName)
 		if err != nil {
 			log.Println("下载更新文件失败！", err)
 			color.Red("下载更新文件失败！")
 			return "", err
 		}
 	}
-	if updateInfo.DirectUrl == "" {
+	if updateInfo.MainProgramDirectUrl == "" {
 		directUrl, err := lanzou.GetDownloadUrl(updateInfo.LanzouUrl, updateInfo.LanzouPwd, updateInfo.MainProgramName)
 		if err != nil {
 			log.Println("获取更新文件下载地址失败！", err)

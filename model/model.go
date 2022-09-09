@@ -32,18 +32,19 @@ var Auto_Clock_IN_Success bool = false
 var UserConfigChanged bool = false
 
 //版本号
-var Version string = "v1.5.0"
+var Version string = "v1.4.6"
 
 type Update struct {
-	LanzouUrl               string //蓝奏云地址
-	DirectUrl               string //直接下载地址
-	LanzouPwd               string //下载密码
-	MainProgramName         string //主程序名
-	AutoStartProgramName    string //自启动程序名
-	AutoStartProgramVersion string //自启动程序版本
-	MainProgramVersion      string //主程序版本
-	AutoStartProgramMd5     string //自启动程序md5
-	MainProgramMd5          string //主程序md5
+	LanzouUrl                 string //蓝奏云地址
+	MainProgramDirectUrl      string //直接下载地址
+	AutoStartProgramDirectUrl string //直接下载地址
+	LanzouPwd                 string //下载密码
+	MainProgramName           string //主程序名
+	AutoStartProgramName      string //自启动程序名
+	AutoStartProgramVersion   string //自启动程序版本
+	MainProgramVersion        string //主程序版本
+	AutoStartProgramMd5       string //自启动程序md5
+	MainProgramMd5            string //主程序md5
 }
 
 //全局配置

@@ -16,19 +16,19 @@ import (
 )
 
 func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
-	//today := time.Now().Local().Format("2006年1月2日")
+	today := time.Now().Local().Format("2006年1月2日")
 	apiUrl := model.All.ClockIn.ClockInUrl
 	//URL param
-	// queryData := url.Values{}
-	// queryData.Set("id", user.UserNonce)
-	// queryData.Set("id2", today)
-	// u, err := url.ParseRequestURI(apiUrl)
-	// if err != nil {
-	// 	fmt.Printf("parse url requestUrl failed, err:%v\n", err)
-	// 	log.Printf("parse url requestUrl failed, err:%v\n", err)
-	// 	return err
-	// }
-	// u.RawQuery = queryData.Encode() // URL encode
+	queryData := url.Values{}
+	queryData.Set("id", user.UserNonce)
+	queryData.Set("id2", today)
+	u, err := url.ParseRequestURI(apiUrl)
+	if err != nil {
+		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
+		log.Printf("parse url requestUrl failed, err:%v\n", err)
+		return err
+	}
+	u.RawQuery = queryData.Encode() // URL encode
 
 	// 构造请求
 	parame := url.Values{}
@@ -40,7 +40,7 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 		parame.Add(v.Field, v.Value)
 	}
 	data := parame.Encode()
-	req4, _ := http.NewRequest(model.All.ClockIn.Head.Method, apiUrl, strings.NewReader(data))
+	req4, _ := http.NewRequest(model.All.ClockIn.Head.Method, u.String(), strings.NewReader(data))
 	req4.Header.Set("authority", model.All.ClockIn.Head.Authority)
 	req4.Header.Set("content-type", model.All.ClockIn.Head.Content_type)
 	req4.Header.Set("referer", model.All.ClockIn.Head.Referer)
