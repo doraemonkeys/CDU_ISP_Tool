@@ -18,6 +18,8 @@ import (
 func main() {
 	log.Println()
 	log.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>软件开始运行。")
+	//检查更新
+	server.CheckUpdate()
 	shouldReturn := checkStatus()
 	if shouldReturn {
 		return

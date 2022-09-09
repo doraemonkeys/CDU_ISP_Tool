@@ -31,6 +31,21 @@ var Auto_Clock_IN_Success bool = false
 //用户是否使用本程序修改了用户账号配置
 var UserConfigChanged bool = false
 
+//版本号
+var Version string = "v1.5.0"
+
+type Update struct {
+	LanzouUrl               string //蓝奏云地址
+	DirectUrl               string //直接下载地址
+	LanzouPwd               string //下载密码
+	MainProgramName         string //主程序名
+	AutoStartProgramName    string //自启动程序名
+	AutoStartProgramVersion string //自启动程序版本
+	MainProgramVersion      string //主程序版本
+	AutoStartProgramMd5     string //自启动程序md5
+	MainProgramMd5          string //主程序md5
+}
+
 //全局配置
 var All = AllMsg{}
 
