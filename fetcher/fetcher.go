@@ -251,8 +251,7 @@ func GetLocation(user model.UserInfo, client *http.Client) (model.Location, erro
 	//全部出错
 	if err1 != nil && err2 != nil {
 		log.Println("获取地址信息失败,无法打卡！")
-		fmt.Println("获取地址信息失败,无法打卡！")
-		return model.Location{}, errors.New(err1.Error() + err2.Error())
+		return model.Location{}, errors.New(err1.Error() + " " + err2.Error())
 	}
 	attributes := [5]color.Attribute{}
 	attributes[0] = color.FgYellow
