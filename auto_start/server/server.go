@@ -4,11 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"ispTool_auto_start/model"
 	"ispTool_auto_start/utils"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Doraemonkeys/lanzou"
+	"github.com/fatih/color"
 )
 
 //启动打卡程序主体
@@ -138,4 +143,127 @@ func FailedTimes() (int, error) {
 			return count, nil
 		}
 	}
+}
+
+//检查是否有更新,有更新则直接更新
+func CheckUpdate() {
+	//删除旧的更新文件
+	os.Remove("./update.bat")
+	var updateInfo model.Update
+	updateInfo, err := utils.GetUpdateInfo()
+	if err != nil {
+		return
+	}
+	if utils.CompareVersion(updateInfo.AutoStartProgramVersion, model.Version) != 1 {
+		color.Green("当前版本为最新版本！")
+		return
+	}
+	//有更新
+	log.Println("检测到新版本,正在尝试更新!")
+	err = Update(updateInfo)
+	if err == nil {
+		log.Println("更新成功！")
+		os.Exit(0)
+	}
+}
+
+func Update(updateInfo model.Update) error {
+	//下载更新文件
+	tempName, err := downloadUpdate(updateInfo)
+	if err != nil {
+		return err
+	}
+	//校验文件
+	err = checkFile(tempName, updateInfo)
+	if err != nil {
+		return err
+	}
+	return updateAndRestart(tempName)
+}
+
+func updateAndRestart(tempName string) error {
+	//获取文件路径
+	path, err := utils.GetCurrentPath()
+	if err != nil {
+		log.Println("获取当前路径失败！", err)
+		color.Red("获取当前路径失败！")
+		return err
+	}
+	//获取文件的绝对路径
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		log.Println("获取当前路径失败！", err)
+		color.Red("获取当前路径失败！")
+		return err
+	}
+	absPath = filepath.Dir(absPath)
+	//absPath = strings.Replace(absPath, "\\", "/", -1)
+	programName := filepath.Base(path)
+	//命令1
+	cmd1 := "del " + programName
+	//命令2
+	cmd2 := "rename " + tempName + " " + programName
+	//命令3
+	cmd3 := "cmd /c start " + `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs`
+	f, err := os.Create("update.bat")
+	if err != nil {
+		log.Println("创建批处理文件失败！", err)
+		color.Red("创建批处理文件失败！")
+		return err
+	}
+	_, err = f.WriteString("ping -n 2 127.1>nul" + " & " + cmd1 + " & " + cmd2 + " & " + cmd3 + " & exit")
+	if err != nil {
+		log.Println("写入批处理文件失败！", err)
+		color.Red("写入批处理文件失败！")
+		return err
+	}
+	err = utils.CmdNoOutput(absPath, []string{"cmd /c start .\\update.bat", "&", "exit"})
+	if err != nil {
+		log.Println("更新失败！", err)
+		color.Red("更新失败！")
+		return err
+	}
+	return nil
+}
+
+func checkFile(tempName string, updateInfo model.Update) error {
+	md5, err := utils.GetFileMd5(tempName)
+	if err != nil {
+		log.Println("获取更新文件MD5失败！", err)
+		color.Red("获取更新文件MD5失败！")
+		return err
+	}
+	if md5 != updateInfo.AutoStartProgramMd5 {
+		log.Println("更新文件MD5校验失败！")
+		color.Red("更新文件MD5校验失败！")
+		return err
+	}
+	return nil
+}
+
+func downloadUpdate(updateInfo model.Update) (string, error) {
+	tempName := "temp.exe"
+	if updateInfo.AutoStartProgramDirectUrl != "" {
+		err := utils.DownloadFile(updateInfo.AutoStartProgramDirectUrl, tempName)
+		if err != nil {
+			log.Println("下载更新文件失败！", err)
+			color.Red("下载更新文件失败！")
+			return "", err
+		}
+	}
+	if updateInfo.AutoStartProgramDirectUrl == "" {
+		directUrl, err := lanzou.GetDownloadUrl(updateInfo.LanzouUrl, updateInfo.LanzouPwd, updateInfo.AutoStartProgramName)
+		if err != nil {
+			log.Println("获取更新文件下载地址失败！", err)
+			color.Red("获取更新文件下载地址失败！")
+			return "", err
+		}
+		err = lanzou.Download(directUrl, tempName)
+		if err != nil {
+			log.Println("下载更新文件失败！", err)
+			color.Red("下载更新文件失败！")
+			return "", err
+		}
+	}
+	return tempName, nil
 }

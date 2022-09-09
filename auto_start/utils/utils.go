@@ -3,14 +3,20 @@ package utils
 import (
 	"bufio"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"ispTool_auto_start/model"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -249,4 +255,135 @@ func Utf8ToANSI(text string) string {
 //获取昨天的日期
 func GetYesterday() time.Time {
 	return time.Now().AddDate(0, 0, -1)
+}
+
+func GetUpdateInfo() (model.Update, error) {
+	var update model.Update
+	//获取最新版本信息
+	resp, err := Fetch("https://gitee.com/doraemonkey/json_isp/raw/master/update.txt")
+	if err != nil {
+		log.Println("获取更新信息失败", err)
+		color.Red("获取更新信息失败!")
+		return update, err
+	}
+	//解析json
+	err = json.Unmarshal(resp, &update)
+	if err != nil {
+		log.Println("解析更新信息失败", err)
+		color.Red("解析更新信息失败!")
+		return update, err
+	}
+	return update, nil
+}
+
+//不会对内容转码
+func Fetch(url string) ([]byte, error) {
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	//在浏览器中找到request.Header(请求头)中的User-Agent,把值复制下来
+	//add key value
+	request.Header.Add("User-Agent",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+	//模拟客户端发送请求
+	response, err := http.DefaultClient.Do(request)
+	//response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New(http.StatusText(response.StatusCode))
+	}
+	return ioutil.ReadAll(response.Body)
+}
+
+func DownloadFile(url string, filename string) error {
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("user-agent", model.UserAgent)
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return fmt.Errorf("访问url失败,err:%w", err)
+	}
+	defer resp.Body.Close()
+	// 创建一个文件用于保存
+	out, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	//io.Copy() 方法将副本从 src 复制到 dst ，直到 src 达到文件末尾 ( EOF ) 或发生错误，
+	//然后返回复制的字节数和复制时遇到的第一个错误(如果有)。
+	//将响应流和文件流对接起来
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//获取文件md5(字母小写)
+func GetFileMd5(filename string) (string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	//将[]byte转成16进制的字符串表示
+	//var hex string = "48656c6c6f"//(hello)
+	//其中每两个字符对应于其ASCII值的十六进制表示,例如:
+	//0x48 0x65 0x6c 0x6c 0x6f = "Hello"
+	//fmt.Printf("%x\n", hash.Sum(nil))
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+//比较两个版本号(格式为v1.0.0)v1,v2的大小,如果v1>v2返回1，v1<v2返回-1，v1=v2返回0
+func CompareVersion(v1, v2 string) int {
+	v1 = strings.TrimPrefix(v1, "v")
+	v2 = strings.TrimPrefix(v2, "v")
+	v1 = strings.TrimPrefix(v1, "V")
+	v2 = strings.TrimPrefix(v2, "V")
+	v1Arr := strings.Split(v1, ".")
+	v2Arr := strings.Split(v2, ".")
+	for i := 0; i < len(v1Arr); i++ {
+		v1Int, _ := strconv.Atoi(v1Arr[i])
+		v2Int, _ := strconv.Atoi(v2Arr[i])
+		if v1Int > v2Int {
+			return 1
+		} else if v1Int < v2Int {
+			return -1
+		}
+	}
+	return 0
+}
+
+//等待执行完毕才返回,不反回输出
+func CmdNoOutput(dir string, params []string) error {
+	cmd := exec.Command("cmd")
+	cmd_in := bytes.NewBuffer(nil)
+	cmd.Stdin = cmd_in
+	if dir != "" {
+		cmd.Dir = dir
+	}
+	command := ""
+	for i := 0; i < len(params); i++ {
+		command = command + params[i]
+		if i != len(params)-1 {
+			command += " "
+		}
+	}
+	cmd_in.WriteString(command + "\n")
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }
