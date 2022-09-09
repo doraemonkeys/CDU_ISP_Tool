@@ -207,7 +207,7 @@ func checkFile(tempName string, updateInfo model.Update) error {
 	if md5 != updateInfo.MainProgramMd5 {
 		log.Println("更新文件MD5校验失败！")
 		color.Red("更新文件MD5校验失败！")
-		return err
+		return errors.New("更新文件MD5校验失败")
 	}
 	return nil
 }

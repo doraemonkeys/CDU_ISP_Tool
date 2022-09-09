@@ -2,6 +2,7 @@ package server
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"ispTool_auto_start/model"
@@ -204,7 +205,7 @@ func updateAndRestart(tempName string) error {
 	//命令2
 	cmd2 := "rename " + tempName + " " + programName
 	//命令3
-	cmd3 := "cmd /c start " + `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs`
+	cmd3 := "cmd /c " + `"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs"`
 	f, err := os.Create("update.bat")
 	if err != nil {
 		log.Println("创建批处理文件失败！", err)
@@ -233,10 +234,12 @@ func checkFile(tempName string, updateInfo model.Update) error {
 		color.Red("获取更新文件MD5失败！")
 		return err
 	}
+	md5 = strings.ToUpper(md5)
+	updateInfo.AutoStartProgramMd5 = strings.ToUpper(updateInfo.AutoStartProgramMd5)
 	if md5 != updateInfo.AutoStartProgramMd5 {
 		log.Println("更新文件MD5校验失败！")
 		color.Red("更新文件MD5校验失败！")
-		return err
+		return errors.New("更新文件MD5校验失败")
 	}
 	return nil
 }
