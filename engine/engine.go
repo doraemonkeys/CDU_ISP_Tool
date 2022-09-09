@@ -40,7 +40,7 @@ func Run(client http.Client, user model.UserInfo) error {
 		return err
 	}
 	time.Sleep(time.Second)
-	key_value, err := fetcher.CheckingAnomalies(user_no, &client)
+	key_value, err := fetcher.CheckingAnomalies(user, &client)
 	if err != nil {
 		log.Println("健康登记已成功,但出现异常，将自动撤回本次打卡！")
 		color.Red("健康登记已成功,但出现异常，将自动撤回本次打卡！")

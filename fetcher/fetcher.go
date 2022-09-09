@@ -20,11 +20,11 @@ import (
 )
 
 //检查打卡是否异常
-func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue, error) {
+func CheckingAnomalies(user model.UserInfo, client *http.Client) (model.FieldAndValue, error) {
 	apiUrl := model.All.ClockInHome.ClockInHomeUrl
 	// URL param
 	queryData := url.Values{}
-	queryData.Set(model.All.ClockInHome.QueryField, user_no)
+	queryData.Set(model.All.ClockInHome.QueryField, user.UserNonce)
 	u, err := url.ParseRequestURI(apiUrl)
 	if err != nil {
 		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
@@ -60,7 +60,7 @@ func CheckingAnomalies(user_no string, client *http.Client) (model.FieldAndValue
 		key_value.Value = string(match2[2])
 		log.Printf("获取到当前打卡%s(ID)：%s\n", key_value.Field, key_value.Value)
 	}
-	err = server.LookForKeyword(content)
+	err = server.LookForKeyword(user, content)
 	if err != nil {
 		log.Println("健康登记出现异常，可能是程序的错误或正处于风险区！")
 		color.Red("健康登记出现异常，可能是程序的错误或正处于风险区！")

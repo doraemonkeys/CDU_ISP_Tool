@@ -9,9 +9,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Doraemonkeys/lanzou"
+	"github.com/fatih/color"
 )
 
 //今日自动打卡是否成功,请确保auto_start.config文件存在,不存在可以调用CheckAutoStart()函数创建。
@@ -72,30 +76,145 @@ func CheckAutoStart() bool {
 }
 
 //在打卡后的界面寻找异常关键字
-func LookForKeyword(content []byte) error {
-	re3 := regexp.MustCompile(model.All.Regexp.Today_statusRe)
+func LookForKeyword(user model.UserInfo, content []byte) error {
+	prefixRe := user.Province + `[ ]*\|` + user.City + `[ ]*\|` + user.Area
+	re3 := regexp.MustCompile(prefixRe + model.All.Regexp.Today_statusRe)
 	Today_status := re3.Find(content)
 	if Today_status == nil {
 		//可能是第一次打卡,进行全局匹配是否出现异常
-		re := regexp.MustCompile(model.All.Regexp.AbnormalRe)
-		match := re.Find(content)
-		if match == nil {
-			//打卡无异常
+		re4 := regexp.MustCompile(prefixRe)
+		loc := re4.FindIndex([]byte(content))
+		if loc == nil {
+			color.Red("无法检查打卡是否异常,建议去ISP看看！")
 			return nil
 		}
-		return errors.New("健康登记出现异常")
+		Today_status = content[loc[0]:]
 	}
 	//下面匹配两次关键字(冗余操作防止意外)
 	re4 := regexp.MustCompile(model.All.Regexp.AbnormalRe)
 	match4 := re4.Find(Today_status)
 	if match4 != nil {
+		log.Println("检测到 异常 关键字！")
 		return errors.New("健康登记出现异常")
 	}
 	re5 := regexp.MustCompile(model.All.Regexp.AbnormalColorRe)
 	match5 := re5.FindAll(Today_status, -1)
-	if len(match5) > 1 { //删除按钮也是红色的
+	if len(match5) > 0 { //删除按钮也是红色的
+		log.Println("检测到 " + model.All.Regexp.AbnormalColorRe + " 关键字！")
+		return errors.New("健康登记出现异常")
+	}
+	re6 := regexp.MustCompile(`正常`)
+	match6 := re6.FindAll(Today_status, -1)
+	if len(match6) < 4 {
+		log.Println("检测到 " + `正常` + " 关键字 少于4个！")
 		return errors.New("健康登记出现异常")
 	}
 	//打卡无异常
 	return nil
+}
+
+//检查是否有更新,有更新则直接更新
+func CheckUpdate() {
+	var updateInfo model.Update
+	updateInfo, err := utils.GetUpdateInfo()
+	if err != nil {
+		return
+	}
+	if utils.CompareVersion(updateInfo.MainProgramVersion, model.Version) != 1 {
+		return
+	}
+	//有更新
+	err = Update(updateInfo)
+	if err == nil {
+		color.Green("更新成功！程序即将退出！")
+		os.Exit(0)
+	}
+}
+
+func Update(updateInfo model.Update) error {
+	//下载更新文件
+	tempName, err := downloadUpdate(updateInfo)
+	if err != nil {
+		return err
+	}
+	//校验文件
+	err = checkFile(tempName, updateInfo)
+	if err != nil {
+		return err
+	}
+	return updateAndRestart(tempName)
+}
+
+func updateAndRestart(tempName string) error {
+	//获取文件路径
+	path, err := utils.GetCurrentPath()
+	if err != nil {
+		log.Println("获取当前路径失败！", err)
+		color.Red("获取当前路径失败！")
+		return err
+	}
+	//获取文件的绝对路径
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		log.Println("获取当前路径失败！", err)
+		color.Red("获取当前路径失败！")
+		return err
+	}
+	programName := filepath.Base(path)
+	//命令1
+	cmd1 := "del " + programName
+	//命令2
+	cmd2 := "rename " + tempName + " " + programName
+	//命令3
+	cmd3 := "cmd /c start " + programName
+	_, err = utils.Cmd_NoWait(absPath,
+		[]string{"ping -n 4 127.1>nul", "&", cmd1, "&", cmd2, "&", cmd3})
+	if err != nil {
+		log.Println("更新失败！", err)
+		color.Red("更新失败！")
+		return err
+	}
+	return nil
+}
+
+func checkFile(tempName string, updateInfo model.Update) error {
+	md5, err := utils.GetFileMd5(tempName)
+	if err != nil {
+		log.Println("获取更新文件MD5失败！", err)
+		color.Red("获取更新文件MD5失败！")
+		return err
+	}
+	if md5 != updateInfo.MainProgramMd5 {
+		log.Println("更新文件MD5校验失败！")
+		color.Red("更新文件MD5校验失败！")
+		return err
+	}
+	return nil
+}
+
+func downloadUpdate(updateInfo model.Update) (string, error) {
+	tempName := "temp.exe"
+	if updateInfo.DirectUrl != "" {
+		err := utils.DownloadFile(updateInfo.DirectUrl, tempName)
+		if err != nil {
+			log.Println("下载更新文件失败！", err)
+			color.Red("下载更新文件失败！")
+			return "", err
+		}
+	}
+	if updateInfo.DirectUrl == "" {
+		directUrl, err := lanzou.GetDownloadUrl(updateInfo.LanzouUrl, updateInfo.LanzouPwd, updateInfo.MainProgramName)
+		if err != nil {
+			log.Println("获取更新文件下载地址失败！", err)
+			color.Red("获取更新文件下载地址失败！")
+			return "", err
+		}
+		err = lanzou.Download(directUrl, tempName)
+		if err != nil {
+			log.Println("下载更新文件失败！", err)
+			color.Red("下载更新文件失败！")
+			return "", err
+		}
+	}
+	return tempName, nil
 }
