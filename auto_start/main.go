@@ -41,6 +41,8 @@ func main() {
 				if err != nil {
 					log.Println("启动打卡程序主体失败！", err)
 				}
+				//检查更新
+				server.CheckUpdate()
 			}
 		}
 		//time.Sleep(time.Hour / 2)
