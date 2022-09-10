@@ -107,17 +107,17 @@ func getPostField(user model.UserInfo, client *http.Client) (url.Values, error) 
 	re := regexp.MustCompile(model.All.ClockIn.MatchActionRe)
 	match := re.FindSubmatch(content)
 	if match == nil {
-		log.Println("匹配请求字段失败！")
-		fmt.Println("匹配请求字段失败！")
-		return nil, err
+		log.Println("匹配登记请求字段失败！")
+		fmt.Println("匹配登记请求字段失败！")
+		return nil, errors.New("匹配登记请求字段失败")
 	}
 	parame.Add("action", string(match[1]))
 	re = regexp.MustCompile(model.All.ClockIn.MatchParamesRe)
 	match2 := re.FindAllSubmatch(content, -1)
 	if match2 == nil {
-		log.Println("匹配请求字段失败！")
-		fmt.Println("匹配请求字段失败！")
-		return nil, err
+		log.Println("匹配登记请求字段失败！")
+		fmt.Println("匹配登记请求字段失败！")
+		return nil, errors.New("匹配登记请求字段失败")
 	}
 	//先全部否定
 	for _, v := range match2 {
