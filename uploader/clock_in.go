@@ -31,15 +31,11 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 	u.RawQuery = queryData.Encode() // URL encode
 
 	// 构造请求
-	parame := url.Values{}
-	parame.Set(model.All.ClockIn.AreaField, user.Area)
-	parame.Set(model.All.ClockIn.CityField, user.City)
-	parame.Set(model.All.ClockIn.ProvinceField, user.Province)
-
-	for _, v := range model.All.ClockIn.Other {
-		parame.Add(v.Field, v.Value)
+	parames, err := getPostField(user, client)
+	if err != nil {
+		return err
 	}
-	data := parame.Encode()
+	data := parames.Encode()
 	req4, _ := http.NewRequest(model.All.ClockIn.Head.Method, u.String(), strings.NewReader(data))
 	req4.Header.Set("authority", model.All.ClockIn.Head.Authority)
 	req4.Header.Set("content-type", model.All.ClockIn.Head.Content_type)
@@ -72,6 +68,76 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 		return errors.New("健康登记打卡已存在")
 	}
 	return errors.New("CDU-ISP 健康登记打卡 失败")
+}
+
+func getPostField(user model.UserInfo, client *http.Client) (url.Values, error) {
+	today := time.Now().Local().Format("2006年1月2日")
+	apiUrl := model.All.ClockIn.ClockInUrl
+	//URL param
+	queryData := url.Values{}
+	queryData.Set("id", user.UserNonce)
+	queryData.Set("id2", today)
+	u, err := url.ParseRequestURI(apiUrl)
+	if err != nil {
+		fmt.Printf("parse url requestUrl failed, err:%v\n", err)
+		log.Printf("parse url requestUrl failed, err:%v\n", err)
+		return nil, err
+	}
+	u.RawQuery = queryData.Encode() // URL encode
+
+	// 构造请求
+	req, _ := http.NewRequest("GET", u.String(), nil)
+	req.Header.Set("authority", model.All.ClockIn.Head.Authority)
+	req.Header.Set("content-type", model.All.ClockIn.Head.Content_type)
+	req.Header.Set("referer", model.All.ClockIn.Head.Referer)
+	req.Header.Set("user-agent", model.UserAgent)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("访问ISP登记请求页面失败！可能是ISP结构发生变化，请联系开发者。", err)
+		fmt.Println("访问ISP登记请求页面失败！可能是ISP结构发生变化，请联系开发者。", err)
+		return nil, err
+	}
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("读取ISP登记请求页面失败！", err)
+		fmt.Println("读取ISP登记请求页面失败！", err)
+		return nil, err
+	}
+	var parame = url.Values{}
+	re := regexp.MustCompile(model.All.ClockIn.MatchActionRe)
+	match := re.FindSubmatch(content)
+	if match == nil {
+		log.Println("匹配请求字段失败！")
+		fmt.Println("匹配请求字段失败！")
+		return nil, err
+	}
+	parame.Add("action", string(match[1]))
+	re = regexp.MustCompile(model.All.ClockIn.MatchParamesRe)
+	match2 := re.FindAllSubmatch(content, -1)
+	if match2 == nil {
+		log.Println("匹配请求字段失败！")
+		fmt.Println("匹配请求字段失败！")
+		return nil, err
+	}
+	//先全部否定
+	for _, v := range match2 {
+		parame.Add(string(v[1]), "否")
+	}
+	//设置区域
+	parame.Set(model.All.ClockIn.AreaField, user.Area)
+	parame.Set(model.All.ClockIn.CityField, user.City)
+	parame.Set(model.All.ClockIn.ProvinceField, user.Province)
+	//打印parame的所有key
+	count := 0
+	for k, v := range parame {
+		for range v {
+			fmt.Printf("%s ", k)
+			count++
+		}
+	}
+	//打印parame的数量
+	fmt.Println("共", count, "个字段")
+	return parame, nil
 }
 
 func CancelCheckIn(key_value model.FieldAndValue, client *http.Client) error {
