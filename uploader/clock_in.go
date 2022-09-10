@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dlclark/regexp2"
 	"github.com/fatih/color"
 )
 
@@ -60,13 +61,6 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 	if match != nil {
 		return nil
 	}
-	re = regexp.MustCompile(model.All.Regexp.Already_Clock_In_Re)
-	match = re.Find(content4)
-	if match != nil {
-		log.Println(user.UserID, "健康登记打卡已存在")
-		color.Green("%s %s", user.UserID, "健康登记打卡已存在")
-		return errors.New("健康登记打卡已存在")
-	}
 	return errors.New("CDU-ISP 健康登记打卡 失败")
 }
 
@@ -103,25 +97,44 @@ func getPostField(user model.UserInfo, client *http.Client) (url.Values, error) 
 		fmt.Println("读取ISP登记请求页面失败！", err)
 		return nil, err
 	}
+	re2 := regexp.MustCompile(model.All.Regexp.Already_Clock_In_Re)
+	match2 := re2.Find(content)
+	if match2 != nil {
+		log.Println(user.UserID, "健康登记打卡已存在")
+		color.Green("%s %s", user.UserID, "健康登记打卡已存在")
+		return nil, errors.New("健康登记打卡已存在")
+	}
 	var parame = url.Values{}
-	re := regexp.MustCompile(model.All.ClockIn.MatchActionRe)
-	match := re.FindSubmatch(content)
-	if match == nil {
+	re := regexp2.MustCompile(model.All.ClockIn.MatchParamesRe, 0)
+	//re := regexp2.MustCompile(`(input|button|select).{0,40}?name[ ]*=[ ]*["']([0-9a-zA-Z]+)["'](.*?value="([^"]{0,20})"|)`, 0)
+	rematch, err := re.FindStringMatch(string(content))
+	if err != nil {
+		log.Println("解析ISP登记请求页面失败！", err)
+		fmt.Println("解析ISP登记请求页面失败！", err)
+		return nil, err
+	}
+	if rematch == nil {
 		log.Println("匹配登记请求字段失败！")
 		fmt.Println("匹配登记请求字段失败！")
 		return nil, errors.New("匹配登记请求字段失败")
 	}
-	parame.Add("action", string(match[1]))
-	re = regexp.MustCompile(model.All.ClockIn.MatchParamesRe)
-	match2 := re.FindAllSubmatch(content, -1)
-	if match2 == nil {
-		log.Println("匹配登记请求字段失败！")
-		fmt.Println("匹配登记请求字段失败！")
-		return nil, errors.New("匹配登记请求字段失败")
-	}
-	//先全部否定
-	for _, v := range match2 {
-		parame.Add(string(v[1]), "否")
+	for rematch != nil {
+		if rematch.GroupByNumber(3).String() != "" {
+			//固定值
+			parame.Add(rematch.GroupByNumber(2).String(), rematch.GroupByNumber(4).String())
+		} else if rematch.GroupByNumber(1).String() == "select" {
+			//默认选否
+			parame.Add(rematch.GroupByNumber(2).String(), "否")
+		} else {
+			//没有值
+			parame.Add(rematch.GroupByNumber(2).String(), "")
+		}
+		rematch, err = re.FindNextMatch(rematch)
+		if err != nil {
+			log.Println("解析ISP登记请求页面失败！", err)
+			fmt.Println("解析ISP登记请求页面失败！", err)
+			return nil, err
+		}
 	}
 	//设置区域
 	parame.Set(model.All.ClockIn.AreaField, user.Area)
