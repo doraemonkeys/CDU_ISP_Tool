@@ -9,7 +9,8 @@
 2. 支持添加批量账号打卡
 3. 可以设置每天自动打卡
 4. 自动检测打卡是否异常并撤回
-5. 详细的log日志
+5. 自动更新
+6. 详细的log日志
 
 
 
@@ -19,7 +20,7 @@
 
     下载链接：[Releases · CDU_ISP_Tool](https://github.com/Doraemonkeys/CDU_ISP_Tool/releases)
 
-   ![](https://raw.githubusercontent.com/Doraemonkeys/picture/master/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202022-08-18%20030702.png)
+   ![](https://raw.githubusercontent.com/Doraemonkeys/picture/master/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202022-09-10%20091314.png)
 
 2. **解压**到自己熟悉的文件夹
 
@@ -41,7 +42,7 @@
 
 - 如需为账户设置特殊的打卡地址,可以将地址添加在 `配置文件.config`。
 
-  例如，固定账号打卡地址为四川省成都市龙泉驿区:![](https://raw.githubusercontent.com/Doraemonkeys/picture/master/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202022-08-28%20203019.png)
+  例如，固定账号打卡地址为四川省成都市龙泉驿区:![](https://raw.githubusercontent.com/Doraemonkeys/picture/master/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202022-08-28%20203019_cr.png)
 
 
 
