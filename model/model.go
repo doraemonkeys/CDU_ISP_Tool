@@ -104,11 +104,13 @@ type ClockInHomeMsg struct {
 type ClockInMsg struct {
 	ClockInUrl string
 	//QueryField    []string
-	Head          Header
-	ProvinceField string
-	CityField     string
-	AreaField     string
-	Other         []FieldAndValue
+	Head           Header
+	ProvinceField  string
+	CityField      string
+	AreaField      string
+	MatchActionRe  string
+	MatchParamesRe string
+	Other          []FieldAndValue
 }
 
 type CancelMsg struct {
