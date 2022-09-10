@@ -59,13 +59,14 @@ type Header struct {
 }
 
 type LoginMsg struct {
-	LoginWebUrl string
-	LoginUrl    string
-	Input1Field string //学号对应字段
-	Input2Field string //密码对应字段
-	Input3Field string //验证码对应字段
-	Other       []FieldAndValue
-	Head        Header
+	LoginWebUrl    string
+	LoginUrl       string
+	Input1Field    string //学号对应字段
+	Input2Field    string //密码对应字段
+	Input3Field    string //验证码对应字段
+	MatchParamesRe string //匹配参数的正则表达式
+	Other          []FieldAndValue
+	Head           Header
 }
 
 type UserInfo struct {
