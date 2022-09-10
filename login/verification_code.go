@@ -7,13 +7,28 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 
+	"github.com/dlclark/regexp2"
 	"github.com/fatih/color"
 )
 
-func Get_ISP_Login_code(client *http.Client) (string, error) {
+func Get_ISP_Login_code(content []byte) (string, error) {
+	//fmt.Println(string(content))
+	re := regexp.MustCompile(model.All.Regexp.VerificationCodeRe)
+	substr := re.FindSubmatch(content)
+	if substr == nil {
+		log.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
+		fmt.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
+		//将页面内容写入到文件用于debug
+		ioutil.WriteFile("loginError.html", content, 0644)
+		return "", errors.New("substr == nil")
+	}
+	return string(substr[1]), nil
+}
 
+func Fetch_ISP_Login_Page(client *http.Client) ([]byte, error) {
 	req, _ := http.NewRequest("GET", model.All.Login.LoginWebUrl, nil)
 	req.Header.Set("User-Agent", model.UserAgent)
 
@@ -27,23 +42,44 @@ func Get_ISP_Login_code(client *http.Client) (string, error) {
 			log.Println("访问ISP登录界面失败！可能是ISP结构发生变化，请联系开发者。")
 			fmt.Println("访问ISP登录界面失败！可能是ISP结构发生变化，请联系开发者。")
 		}
-		return "", err
+		return nil, err
 	}
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("读取登录页面失败！", err)
 		fmt.Println("读取登录页面失败！", err)
-		return "", err
+		return nil, err
 	}
-	//fmt.Println(string(content))
-	re := regexp.MustCompile(model.All.Regexp.VerificationCodeRe)
-	substr := re.FindSubmatch(content)
-	if substr == nil {
-		log.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
-		//将页面内容写入到文件用于debug
-		ioutil.WriteFile("loginError.html", content, 0644)
-		return "", errors.New("substr == nil")
+	return content, nil
+}
+
+func getPostField(content []byte) (url.Values, error) {
+	var parame = url.Values{}
+	re := regexp2.MustCompile(model.All.Login.MatchParamesRe, 0)
+	rematch, err := re.FindStringMatch(string(content))
+	if err != nil {
+		log.Println("正则表达式匹配出现问题！")
+		fmt.Println("正则表达式匹配出现问题！")
+		return nil, errors.New("正则表达式匹配出现问题！")
 	}
-	return string(substr[1]), nil
+	for rematch != nil {
+		parame.Add(rematch.GroupByNumber(2).String(), rematch.GroupByNumber(4).String())
+		rematch, err = re.FindNextMatch(rematch)
+		if err != nil {
+			log.Println("正则表达式匹配出现问题！")
+			fmt.Println("正则表达式匹配出现问题！")
+			return nil, errors.New("正则表达式匹配出现问题！")
+		}
+	}
+	//打印parame的所有key
+	count := 0
+	for k, v := range parame {
+		for range v {
+			fmt.Printf("%s ", k)
+			count++
+		}
+	}
+	//打印parame的数量
+	fmt.Println("共", count, "个字段")
+	return parame, nil
 }
