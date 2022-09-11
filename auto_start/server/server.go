@@ -148,8 +148,6 @@ func FailedTimes() (int, error) {
 
 //检查是否有更新,有更新则直接更新
 func CheckUpdate() {
-	//删除旧的更新文件
-	os.Remove("./update.bat")
 	var updateInfo model.Update
 	updateInfo, err := utils.GetUpdateInfo()
 	if err != nil {
@@ -160,7 +158,7 @@ func CheckUpdate() {
 		return
 	}
 	//有更新
-	log.Println("检测到新版本,正在尝试更新!")
+	log.Println("检测到新版本", updateInfo.AutoStartProgramVersion, ",正在尝试更新!")
 	err = Update(updateInfo)
 	if err == nil {
 		log.Println("更新成功！")
@@ -206,19 +204,28 @@ func updateAndRestart(tempName string) error {
 	cmd2 := "rename " + tempName + " " + programName
 	//命令3
 	cmd3 := "cmd /c " + `"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs"`
-	f, err := os.Create("update.bat")
+	batFile := "update.bat"
+	//命令4
+	cmd4 := "del " + batFile
+	f, err := os.Create(batFile)
 	if err != nil {
 		log.Println("创建批处理文件失败！", err)
 		color.Red("创建批处理文件失败！")
 		return err
 	}
-	_, err = f.WriteString("ping -n 2 127.1>nul" + " & " + cmd1 + " & " + cmd2 + " & " + cmd3 + " & exit")
+	prefixStr := `if "%1" == "h" goto begin
+	mshta vbscript:createobject("wscript.shell").run("""%~nx0"" h",0)(window.close)&&exit
+	:begin` + "\n"
+	_, err = f.WriteString(prefixStr)
 	if err != nil {
 		log.Println("写入批处理文件失败！", err)
 		color.Red("写入批处理文件失败！")
 		return err
 	}
-	err = utils.CmdNoOutput(absPath, []string{"cmd /c start .\\update.bat", "&", "exit"})
+	f.WriteString("ping -n 2 127.1>nul" + " & " + cmd1 + " & " + cmd2 + " & " + cmd3 + " & " + cmd4)
+	f.Close()
+	cmdStr := "cmd /c start .\\" + batFile
+	err = utils.CmdNoOutput(absPath, []string{cmdStr, "&", "exit"})
 	if err != nil {
 		log.Println("更新失败！", err)
 		color.Red("更新失败！")
@@ -245,7 +252,7 @@ func checkFile(tempName string, updateInfo model.Update) error {
 }
 
 func downloadUpdate(updateInfo model.Update) (string, error) {
-	tempName := "temp.exe"
+	tempName := "temp"
 	if updateInfo.AutoStartProgramDirectUrl != "" {
 		err := utils.DownloadFile(updateInfo.AutoStartProgramDirectUrl, tempName)
 		if err != nil {
