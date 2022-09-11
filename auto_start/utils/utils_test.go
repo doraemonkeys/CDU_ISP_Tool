@@ -23,6 +23,8 @@ func TestReadStartWithLastLine(t *testing.T) {
 		{name: "7", args: args{filename: "test.txt", n: 7}, want: "", wantErr: false},
 		{name: "8", args: args{filename: "test.txt", n: 8}, want: "", wantErr: true},
 		{name: "9", args: args{filename: "test.txt", n: 9}, want: "", wantErr: true},
+		{name: "10", args: args{filename: "test2.txt", n: 1}, want: "", wantErr: false},
+		{name: "11", args: args{filename: "test2.txt", n: 2}, want: "", wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
