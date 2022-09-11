@@ -32,7 +32,7 @@ var Auto_Clock_IN_Success bool = false
 var UserConfigChanged bool = false
 
 //版本号
-var Version string = "v1.5.3"
+var Version string = "v1.5.4"
 
 type Update struct {
 	LanzouUrl                 string //蓝奏云地址
