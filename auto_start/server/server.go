@@ -148,6 +148,8 @@ func FailedTimes() (int, error) {
 
 //检查是否有更新,有更新则直接更新
 func CheckUpdate() {
+	//删除旧的更新文件
+	os.Remove("./update.bat")
 	var updateInfo model.Update
 	updateInfo, err := utils.GetUpdateInfo()
 	if err != nil {
