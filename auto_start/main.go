@@ -35,14 +35,14 @@ func main() {
 		//检查今日自动打卡是否成功,今日自动打卡是否存在失败记录(失败2次则不启动打卡程序),
 		if !server.TodayClockInSuccess() {
 			//如果第一次打卡失败，第二次打卡时间为早上7:00之后
-			if (failCount == 0) || (failCount == 1 && time.Now().Hour() >= 7) {
+			if (failCount == 0) || (failCount <= 2 && time.Now().Hour() >= 7) {
+				//检查更新
+				server.CheckUpdate()
 				log.Println("检测到自动打卡未执行,正在启动打卡程序。")
 				err := server.StartNewProgram()
 				if err != nil {
 					log.Println("启动打卡程序主体失败！", err)
 				}
-				//检查更新
-				server.CheckUpdate()
 			}
 		}
 		//time.Sleep(time.Hour / 2)
