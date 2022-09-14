@@ -15,6 +15,7 @@ import (
 )
 
 func Run(client http.Client, user model.UserInfo) error {
+	fmt.Println("正在尝试登录......")
 	err := login.LoginISP(&client, user)
 	if err != nil {
 		fmt.Println("ID", user.UserID, "登录失败！")
