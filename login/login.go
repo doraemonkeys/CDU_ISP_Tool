@@ -11,14 +11,16 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/fatih/color"
 	"golang.org/x/text/transform"
 )
 
 // 登陆客户端
 
 func LoginISP(client *http.Client, user model.UserInfo) error {
-	content, err := Fetch_ISP_Login_Page(client)
+	content, err := Get_Login_Page(client)
 	if err != nil {
 		return err
 	}
@@ -97,4 +99,40 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 		return errors.New("验证码错误")
 	}
 	return nil
+}
+
+func Get_Login_Page(client *http.Client) ([]byte, error) {
+	maxTry := 3
+	var content []byte
+	var err error
+	for i := 0; i < maxTry; i++ {
+		statusCode := 0
+		content, statusCode, err = Fetch_ISP_Login_Page(client)
+		log.Println("第", i, "次", "LoginPage status code:", statusCode)
+		if err != nil {
+			re := regexp.MustCompile(model.All.Regexp.Ipv6Re)
+			if re.FindString(err.Error()) != "" {
+				log.Println("访问ISP登录界面失败！ISP不支持Ipv6。")
+				color.Red("访问ISP登录界面失败！ISP不支持Ipv6。")
+				return nil, err
+			}
+			log.Println("访问ISP登录界面失败！", err)
+			time.Sleep(time.Second)
+			continue
+		}
+		if len(content) < 20 { //或者 statusCode != 200
+			err = errors.New("len(content) too short")
+			log.Println("访问ISP登录界面失败！", err)
+			time.Sleep(time.Second)
+			continue
+		}
+		break
+	}
+	if err != nil {
+		fmt.Println("访问ISP登录界面失败！", err)
+		//将页面内容写入到文件用于debug
+		ioutil.WriteFile("loginError.html", content, 0644)
+		return nil, err
+	}
+	return content, nil
 }
