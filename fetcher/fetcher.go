@@ -19,9 +19,14 @@ import (
 	"golang.org/x/text/transform"
 )
 
-//检查打卡是否异常
+// 检查打卡是否异常
 func CheckingAnomalies(user model.UserInfo, client *http.Client) (model.FieldAndValue, error) {
 	apiUrl := model.All.ClockInHome.ClockInHomeUrl
+	if model.UseVPN {
+		apiUrl = model.All.VPN_ISP_BaseURL + apiUrl
+	} else {
+		apiUrl = model.All.DirectBaseURL + apiUrl
+	}
 	// URL param
 	queryData := url.Values{}
 	queryData.Set(model.All.ClockInHome.QueryField, user.UserNonce)
@@ -70,11 +75,22 @@ func CheckingAnomalies(user model.UserInfo, client *http.Client) (model.FieldAnd
 }
 
 func Get_User_Nonce(client *http.Client) (string, error) {
-	request, _ := http.NewRequest(model.All.ISPHome.Head.Method, model.All.ISPHome.ISPHomeUrl, nil)
+	var request *http.Request
+	if model.UseVPN {
+		request, _ = http.NewRequest(model.All.ISPHome.Head.Method,
+			model.All.VPN_ISP_BaseURL+model.All.ISPHome.ISPHomeUrl, nil)
+	} else {
+		request, _ = http.NewRequest(model.All.ISPHome.Head.Method,
+			model.All.DirectBaseURL+model.All.ISPHome.ISPHomeUrl, nil)
+	}
 	request.Header.Set("authority", model.All.ISPHome.Head.Authority)
 	request.Header.Set("content-type", model.All.ISPHome.Head.Content_type)
 	request.Header.Set("user-agent", model.UserAgent)
-	request.Header.Set("referer", model.All.ISPHome.Head.Referer)
+	if model.UseVPN {
+		request.Header.Set("referer", model.All.VPN_ISP_BaseURL+model.All.ISPHome.Head.Referer)
+	} else {
+		request.Header.Set("referer", model.All.DirectBaseURL+model.All.ISPHome.Head.Referer)
+	}
 
 	resp, err := client.Do(request)
 	if err != nil {
@@ -152,7 +168,7 @@ func Get_IP_Loaction() (model.Location, error) {
 	return find_IP_Loaction_From_html(content)
 }
 
-//从html中寻找ip归属地
+// 从html中寻找ip归属地
 func find_IP_Loaction_From_html(content []byte) (model.Location, error) {
 	re := regexp.MustCompile(model.All.Regexp.Ip_locationRe)
 	match := re.FindAllSubmatch(content, -1)
@@ -183,7 +199,12 @@ func find_IP_Loaction_From_html(content []byte) (model.Location, error) {
 }
 
 func Get_isp_location_history(user_no string, client *http.Client) (model.Location, error) {
-	apiUrl := model.All.ClockInHome.ClockInHomeUrl
+	apiUrl := ""
+	if model.UseVPN {
+		apiUrl = model.All.VPN_ISP_BaseURL + model.All.ClockInHome.ClockInHomeUrl
+	} else {
+		apiUrl = model.All.DirectBaseURL + model.All.ClockInHome.ClockInHomeUrl
+	}
 	// URL param
 	queryData := url.Values{}
 	queryData.Set(model.All.ClockInHome.QueryField, user_no)
@@ -255,6 +276,12 @@ func GetLocation(user model.UserInfo, client *http.Client) (model.Location, erro
 	}
 	attributes := [5]color.Attribute{}
 	attributes[0] = color.FgYellow
+	//ip地址很精确则直接使用ip地址
+	if err2 == nil && IP_Loaction.Area != "" {
+		utils.ColorPrint(attributes[:], "使用ip地址信息打卡", "，如果有错误请前往ISP手动修改！\n")
+		log.Println("使用ip地址信息打卡，如果有错误请前往ISP手动修改！")
+		return IP_Loaction, nil
+	}
 	//全部没错或有一个获取失败,获取失败会导致user.ChooseLocation被修改(仅此函数中)
 	if err2 == nil && user.ChooseLocation == 1 {
 		utils.ColorPrint(attributes[:], "使用ip地址信息打卡", "，如果有错误请前往ISP手动修改！\n")

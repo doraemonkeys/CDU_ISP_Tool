@@ -20,7 +20,7 @@ import (
 // 登陆客户端
 
 func LoginISP(client *http.Client, user model.UserInfo) error {
-	content, err := Get_Login_Page(client)
+	content, err := Get_Login_Page(client, user)
 	if err != nil {
 		return err
 	}
@@ -45,13 +45,22 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	// 	parame.Add(v.Field, v.Value)
 	// }
 	data := parame.Encode()
-	request, _ := http.NewRequest(model.All.Login.Head.Method,
-		model.All.Login.LoginUrl, strings.NewReader(data))
-
+	var request *http.Request
+	if model.UseVPN {
+		request, _ = http.NewRequest(model.All.Login.Head.Method,
+			model.All.VPN_ISP_BaseURL+model.All.Login.LoginUrl, strings.NewReader(data))
+	} else {
+		request, _ = http.NewRequest(model.All.Login.Head.Method,
+			model.All.DirectBaseURL+model.All.Login.LoginUrl, strings.NewReader(data))
+	}
 	request.Header.Set("authority", model.All.Login.Head.Authority)
 	request.Header.Set("content-type", model.All.Login.Head.Content_type)
 	request.Header.Set("user-agent", model.UserAgent)
-	request.Header.Set("referer", model.All.Login.Head.Referer)
+	if model.UseVPN {
+		request.Header.Set("referer", model.All.VPN_ISP_BaseURL+model.All.Login.Head.Referer)
+	} else {
+		request.Header.Set("referer", model.All.DirectBaseURL+model.All.Login.Head.Referer)
+	}
 	// 发起登录请求
 	resp, err := client.Do(request)
 	if err != nil {
@@ -101,7 +110,7 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	return nil
 }
 
-func Get_Login_Page(client *http.Client) ([]byte, error) {
+func Get_Login_Page(client *http.Client, user model.UserInfo) ([]byte, error) {
 	maxTry := 3
 	var content []byte
 	var err error
@@ -110,15 +119,17 @@ func Get_Login_Page(client *http.Client) ([]byte, error) {
 		content, statusCode, err = Fetch_ISP_Login_Page(client)
 		log.Println("第", i, "次", "LoginPage status code:", statusCode)
 		if err != nil {
-			re := regexp.MustCompile(model.All.Regexp.Ipv6Re)
-			if re.FindString(err.Error()) != "" {
-				log.Println("访问ISP登录界面失败！ISP不支持Ipv6。")
-				color.Red("访问ISP登录界面失败！ISP不支持Ipv6。")
+			log.Println("访问ISP登录界面失败！尝试使用VPN登录", err)
+			fmt.Println("访问ISP登录界面失败,尝试使用VPN登录......")
+			//使用VPN登录
+			content, statusCode, err = Fetch_ISP_Login_Pag_VPN(client, user)
+			if err != nil {
+				log.Println("VPN登录失败！", "code:", statusCode, "err:", err)
+				color.Red("VPN登录失败:", err)
 				return nil, err
 			}
-			log.Println("访问ISP登录界面失败！", err)
-			time.Sleep(time.Second)
-			continue
+			model.UseVPN = true
+			break
 		}
 		if len(content) < 20 { //或者 statusCode != 200
 			err = errors.New("len(content) too short")

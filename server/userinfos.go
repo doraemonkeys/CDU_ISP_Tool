@@ -16,7 +16,7 @@ import (
 	"github.com/fatih/color"
 )
 
-//用户可能是第一次使用
+// 用户可能是第一次使用
 func firstUse() error {
 	config, err := os.OpenFile("./config/配置文件.config", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
 	if err != nil {
@@ -31,18 +31,23 @@ func firstUse() error {
 	if !ok {
 		panic("  用户不同意协议！")
 	}
+	var users []model.UserInfo
+	var NewUser = model.UserInfo{}
 	fmt.Println("请输入你在成都大学的学号：")
 	var id string
 	fmt.Scan(&id)
 	fmt.Println("请输入你的ISP密码：")
 	var pwd string
 	fmt.Scan(&pwd)
-	fmt.Scanf("\n")
-	var users []model.UserInfo
-	var NewUser = model.UserInfo{}
+	fmt.Println("请输入教务系统密码(用于登录VPN)：")
+	var VpnPwd string
+	fmt.Scan(&VpnPwd)
 	NewUser.UserID = strings.TrimSpace(id)
 	NewUser.UserPwd = strings.TrimSpace(pwd)
-	NewUser.ChooseLocation = 1
+	NewUser.VPN_Pwd = strings.TrimSpace(VpnPwd)
+	fmt.Scanf("\n")
+
+	NewUser.ChooseLocation = 2
 	users = append(users, NewUser)
 	for _, v := range users {
 		data, err := json.Marshal(v)
@@ -127,13 +132,21 @@ func ModifyUserInfos() error {
 	if NewUser.UserID == "Q" || NewUser.UserID == "q" {
 		return errors.New("取消修改")
 	}
-	fmt.Println("请输入新的密码：")
+	fmt.Println("请输入ISP的密码：")
 	var pwd string
 	fmt.Scan(&pwd)
 	NewUser.UserPwd = strings.TrimSpace(pwd)
 	if NewUser.UserPwd == "Q" || NewUser.UserPwd == "q" {
 		return errors.New("取消修改")
 	}
+	fmt.Println("请输入教务系统(登录VPN)的密码：")
+	var VpnPwd string
+	fmt.Scan(&VpnPwd)
+	NewUser.VPN_Pwd = strings.TrimSpace(VpnPwd)
+	if NewUser.VPN_Pwd == "Q" || NewUser.VPN_Pwd == "q" {
+		return errors.New("取消修改")
+	}
+	fmt.Scanf("\n")
 	config, err := os.Open("./config/配置文件.config")
 	if err != nil {
 		log.Println("打开配置文件失败！", err)
@@ -153,6 +166,7 @@ func ModifyUserInfos() error {
 				json.Unmarshal([]byte(userData), &user)
 				if user.UserID == NewUser.UserID {
 					user.UserPwd = NewUser.UserPwd
+					user.VPN_Pwd = NewUser.VPN_Pwd
 					found = true
 				}
 				users = append(users, user)
@@ -171,6 +185,7 @@ func ModifyUserInfos() error {
 		json.Unmarshal([]byte(userData), &user)
 		if user.UserID == NewUser.UserID {
 			user.UserPwd = NewUser.UserPwd
+			user.VPN_Pwd = NewUser.VPN_Pwd
 			found = true
 		}
 		users = append(users, user)

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/dlclark/regexp2"
 )
@@ -26,10 +27,13 @@ func Get_ISP_Login_code(content []byte) (string, error) {
 }
 
 func Fetch_ISP_Login_Page(client *http.Client) ([]byte, int, error) {
-	req, _ := http.NewRequest("GET", model.All.Login.LoginWebUrl, nil)
+	req, _ := http.NewRequest("GET", model.All.DirectBaseURL+model.All.Login.LoginWebUrl, nil)
 	req.Header.Set("User-Agent", model.UserAgent)
-
+	//设置超时时间1.5s
+	client.Timeout = time.Second + time.Second/2
 	resp, err := client.Do(req)
+	//恢复超时时间
+	client.Timeout = 0
 	if err != nil {
 		return nil, 0, err
 	}

@@ -18,7 +18,7 @@ import (
 	"github.com/fatih/color"
 )
 
-//今日自动打卡是否成功,请确保auto_start.config文件存在,不存在可以调用CheckAutoStart()函数创建。
+// 今日自动打卡是否成功,请确保auto_start.config文件存在,不存在可以调用CheckAutoStart()函数创建。
 func TodayCheckInSuccess() bool {
 	checkInInfo, err := utils.ReverseRead("./config/auto_start.config", 2)
 	if err != nil {
@@ -40,7 +40,7 @@ func TodayCheckInSuccess() bool {
 	return false
 }
 
-//是否已经设置为自启动
+// 是否已经设置为自启动
 func CheckAutoStart() bool {
 	autoStart, err := os.Open("./config/auto_start.config")
 	if err != nil {
@@ -75,12 +75,13 @@ func CheckAutoStart() bool {
 	return false
 }
 
-//在打卡后的界面寻找异常关键字
+// 在打卡后的界面寻找异常关键字
 func LookForKeyword(user model.UserInfo, content []byte) error {
 	prefixRe := user.Province + `[ ]*\|` + user.City + `[ ]*\|` + user.Area
 	re3 := regexp.MustCompile(prefixRe + model.All.Regexp.Today_statusRe)
 	Today_status := re3.Find(content)
 	if Today_status == nil {
+		log.Println("检查今日打卡状态出错，可能是ISP结构发生改变！")
 		//可能是第一次打卡,进行全局匹配是否出现异常
 		re4 := regexp.MustCompile(prefixRe)
 		loc := re4.FindIndex([]byte(content))
@@ -113,7 +114,7 @@ func LookForKeyword(user model.UserInfo, content []byte) error {
 	return nil
 }
 
-//检查是否有更新,有更新则直接更新
+// 检查是否有更新,有更新则直接更新
 func CheckUpdate() {
 	//删除旧的更新文件
 	os.Remove("./update.bat")

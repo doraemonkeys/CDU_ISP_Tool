@@ -4,7 +4,7 @@ import (
 	"ISP_Tool/model"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,7 +18,12 @@ import (
 
 func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 	today := time.Now().Local().Format("2006年1月2日")
-	apiUrl := model.All.ClockIn.ClockInUrl
+	apiUrl := ""
+	if model.UseVPN {
+		apiUrl = model.All.VPN_ISP_BaseURL + model.All.ClockIn.ClockInUrl
+	} else {
+		apiUrl = model.All.DirectBaseURL + model.All.ClockIn.ClockInUrl
+	}
 	//URL param
 	queryData := url.Values{}
 	queryData.Set("id", user.UserNonce)
@@ -40,7 +45,11 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 	req4, _ := http.NewRequest(model.All.ClockIn.Head.Method, u.String(), strings.NewReader(data))
 	req4.Header.Set("authority", model.All.ClockIn.Head.Authority)
 	req4.Header.Set("content-type", model.All.ClockIn.Head.Content_type)
-	req4.Header.Set("referer", model.All.ClockIn.Head.Referer)
+	if model.UseVPN {
+		req4.Header.Set("referer", model.All.VPN_ISP_BaseURL+model.All.ClockIn.Head.Referer)
+	} else {
+		req4.Header.Set("referer", model.All.DirectBaseURL+model.All.ClockIn.Head.Referer)
+	}
 	req4.Header.Set("user-agent", model.UserAgent)
 
 	resp4, err := client.Do(req4)
@@ -49,7 +58,7 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 		fmt.Println("发起ISP登记请求失败！可能是ISP结构发生变化，请联系开发者。", err)
 		return err
 	}
-	content4, err := ioutil.ReadAll(resp4.Body)
+	content4, err := io.ReadAll(resp4.Body)
 	if err != nil {
 		log.Println("读取ISP登记返回信息失败！", err)
 		fmt.Println("读取ISP登记返回信息失败！", err)
@@ -67,6 +76,11 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 func getPostField(user model.UserInfo, client *http.Client) (url.Values, error) {
 	today := time.Now().Local().Format("2006年1月2日")
 	apiUrl := model.All.ClockIn.ClockInUrl
+	if model.UseVPN {
+		apiUrl = model.All.VPN_ISP_BaseURL + apiUrl
+	} else {
+		apiUrl = model.All.DirectBaseURL + apiUrl
+	}
 	//URL param
 	queryData := url.Values{}
 	queryData.Set("id", user.UserNonce)
@@ -91,7 +105,7 @@ func getPostField(user model.UserInfo, client *http.Client) (url.Values, error) 
 		fmt.Println("访问ISP登记请求页面失败！可能是ISP结构发生变化，请联系开发者。", err)
 		return nil, err
 	}
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("读取ISP登记请求页面失败！", err)
 		fmt.Println("读取ISP登记请求页面失败！", err)
@@ -161,11 +175,11 @@ func CancelCheckIn(key_value model.FieldAndValue, client *http.Client) error {
 		if err == nil {
 			return nil
 		}
-		//只尝试取消10次
-		if i > 10 {
+		//只尝试取消3次
+		if i > 3 {
 			break
 		}
-		time.Sleep(time.Second / 4)
+		time.Sleep(time.Second / 2)
 	}
 	return err
 }
@@ -173,6 +187,11 @@ func CancelCheckIn(key_value model.FieldAndValue, client *http.Client) error {
 func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 	//apiUrl := "https://xsswzx.cdu.edu.cn/ispstu/com_user/projecthealth_del.asp"
 	apiUrl := model.All.Cancel.CancelUrl
+	if model.UseVPN {
+		apiUrl = model.All.VPN_ISP_BaseURL + apiUrl
+	} else {
+		apiUrl = model.All.DirectBaseURL + apiUrl
+	}
 	// URL param
 	queryData := url.Values{}
 	queryData.Set(key_value.Field, key_value.Value)
@@ -194,7 +213,7 @@ func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
 		return err
 	}
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("读取ISP页面内容失败！", err)
 		fmt.Println("读取ISP页面内容失败！", err)

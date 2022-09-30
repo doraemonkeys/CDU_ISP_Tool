@@ -130,9 +130,9 @@ func RebuildConfig(users []model.UserInfo) error {
 	return nil
 }
 
-//从网络获取全局配置
+// 从网络获取全局配置
 func GetConfig() error {
-	content, err := utils.Fetch("https://gitee.com/doraemonkey/json_isp/raw/master/json.txt")
+	content, err := utils.Fetch("https://gitee.com/doraemonkey/json_isp/raw/master/json2.txt")
 	if err != nil {
 		return err
 	}
@@ -192,8 +192,8 @@ func SetAutoStart() error {
 	return nil
 }
 
-//用户设置自启动后会关闭当前程序，开启一个守护进程，
-//应当确保在设置自启动后调用。
+// 用户设置自启动后会关闭当前程序，开启一个守护进程，
+// 应当确保在设置自启动后调用。
 func StartNewProgram() error {
 	//延迟几秒打开一个新进程,不等cmd执行完毕就返回
 	_, err := utils.Cmd_NoWait(`C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup`,
@@ -227,7 +227,7 @@ func CancelAutoStart() error {
 	return nil
 }
 
-//添加用户信息
+// 添加用户信息
 func AddUser() error {
 	config, err := os.OpenFile("./config/配置文件.config", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
@@ -256,6 +256,13 @@ func AddUser() error {
 		fmt.Scan(&pwd)
 		NewUser.UserPwd = strings.TrimSpace(pwd)
 		if NewUser.UserPwd == "Q" || NewUser.UserPwd == "q" {
+			break
+		}
+		fmt.Println("请输入教务系统密码：")
+		var VPNPwd string
+		fmt.Scan(&VPNPwd)
+		NewUser.VPN_Pwd = strings.TrimSpace(VPNPwd)
+		if NewUser.VPN_Pwd == "Q" || NewUser.VPN_Pwd == "q" {
 			break
 		}
 		NewUser.ChooseLocation = 1
