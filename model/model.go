@@ -31,8 +31,11 @@ var Auto_Clock_IN_Success bool = false
 //用户是否使用本程序修改了用户账号配置
 var UserConfigChanged bool = false
 
+//是否使用了VPN
+var UseVPN bool = false
+
 //版本号
-var Version string = "v1.5.7"
+var Version string = "v1.6.0"
 
 type Update struct {
 	LanzouUrl                 string //蓝奏云地址
@@ -75,8 +78,9 @@ type UserInfo struct {
 	UserPwd   string
 	UserNonce string //对应isp的user_no字段
 	Location
-	//1表示使用ip地址(默认)，2表示使用isp历史打卡地址。若配置文件已设置地址，则优先使用配置文件地址
+	//1表示使用ip地址(若精确到区域则选择IP)，2表示使用isp历史打卡地址(默认)。若配置文件已设置地址，则优先使用配置文件地址
 	ChooseLocation int
+	VPN_Pwd        string //与教务系统密码相同
 }
 
 type Location struct {
@@ -138,11 +142,13 @@ type RegexpStr struct {
 }
 
 type AllMsg struct {
-	User        UserInfo
-	Login       LoginMsg
-	ISPHome     ISPHomeMsg
-	ClockInHome ClockInHomeMsg
-	ClockIn     ClockInMsg
-	Cancel      CancelMsg
-	Regexp      RegexpStr //正则表达式
+	User            UserInfo
+	Login           LoginMsg
+	ISPHome         ISPHomeMsg
+	ClockInHome     ClockInHomeMsg
+	ClockIn         ClockInMsg
+	Cancel          CancelMsg
+	Regexp          RegexpStr //正则表达式
+	DirectBaseURL   string
+	VPN_ISP_BaseURL string //登录VPN后会加上:port
 }
