@@ -4,7 +4,7 @@ import (
 	"ISP_Tool/model"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -37,7 +37,7 @@ func Fetch_ISP_Login_Page(client *http.Client) ([]byte, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("读取登录页面失败！", err)
 		fmt.Println("读取登录页面失败！", err)

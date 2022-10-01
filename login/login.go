@@ -6,9 +6,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -79,7 +80,7 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	//转码utf-8
 	utf8BodyReader := transform.NewReader(bodyReader, e.NewDecoder())
 
-	content, err = ioutil.ReadAll(utf8BodyReader)
+	content, err = io.ReadAll(utf8BodyReader)
 	if err != nil {
 		log.Println("读取登录返回界面失败！", err)
 		fmt.Println("读取登录返回界面失败！", err)
@@ -88,15 +89,15 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	re := regexp.MustCompile(model.All.Regexp.PwdErrorRe)
 	match := re.FindSubmatch(content)
 	if match != nil {
-		log.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
-		fmt.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
+		log.Println("ISP账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
+		fmt.Println("ISP账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
 		return errors.New("账号或者密码错误")
 	}
 	re = regexp.MustCompile(model.All.Regexp.IsNotStudentRe)
 	match = re.FindSubmatch(content)
 	if match != nil {
-		log.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
-		fmt.Println("账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
+		log.Println("ISP账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
+		fmt.Println("ISP账号或者密码错误，请修改。", "账号：", user.UserID, "密码：", user.UserPwd)
 		return errors.New("账号或者密码错误")
 	}
 	//验证码错误
@@ -125,7 +126,7 @@ func Get_Login_Page(client *http.Client, user model.UserInfo) ([]byte, error) {
 			content, statusCode, err = Fetch_ISP_Login_Pag_VPN(client, user)
 			if err != nil {
 				log.Println("VPN登录失败！", "code:", statusCode, "err:", err)
-				color.Red("VPN登录失败:", err)
+				color.Red("VPN登录失败:%s", err.Error())
 				return nil, err
 			}
 			model.UseVPN = true
@@ -142,7 +143,7 @@ func Get_Login_Page(client *http.Client, user model.UserInfo) ([]byte, error) {
 	if err != nil {
 		fmt.Println("访问ISP登录界面失败！", err)
 		//将页面内容写入到文件用于debug
-		ioutil.WriteFile("loginError.html", content, 0644)
+		os.WriteFile("loginError.html", content, 0644)
 		return nil, err
 	}
 	return content, nil

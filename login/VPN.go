@@ -3,6 +3,7 @@ package login
 import (
 	"ISP_Tool/model"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -167,8 +168,8 @@ func loginVPN(client *http.Client, postUrl string, postData url.Values) error {
 	re := regexp.MustCompile(`password`)
 	match := re.Find(content)
 	if len(match) != 0 {
-		log.Println("登录VPN失败,账号或密码错误")
-		return errors.New("登录VPN失败,账号或密码错误")
+		log.Println("登录VPN失败,VPN账号或密码错误")
+		return errors.New("登录VPN失败,VPN账号或密码错误,请修改")
 	}
 	return nil
 }
@@ -325,6 +326,9 @@ func Fetch_ISP_Login_Pag_VPN(client *http.Client, user model.UserInfo) ([]byte, 
 
 	err = loginVPN(client, postUrl, postData)
 	if err != nil {
+		if err.Error() == "登录VPN失败,VPN账号或密码错误,请修改" {
+			fmt.Println("ID:", user.UserID, " ISP密码:", user.UserPwd, " VPN密码:", user.VPN_Pwd)
+		}
 		return nil, 0, err
 	}
 	port, statusCode, err := getISP_Port(client)
