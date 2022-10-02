@@ -135,12 +135,12 @@ func CheckUpdate() {
 	go utils.WaitAnimation(ctx)
 	err = Update(updateInfo)
 	cancel()
-	fmt.Println()
 	if err == nil {
 		log.Println("更新成功！")
 		color.Green("更新成功！程序即将退出！")
 		os.Exit(0)
 	}
+	fmt.Println()
 	color.Red(err.Error())
 }
 

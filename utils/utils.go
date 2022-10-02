@@ -356,7 +356,6 @@ func WaitAnimation(ctx context.Context) {
 			return
 		default:
 			ColorPrint(attributes, ">")
-			time.Sleep(time.Second / 4)
 			if i == n-1 {
 				fmt.Printf("\r")
 				for i := 0; i < n; i++ {
@@ -365,6 +364,7 @@ func WaitAnimation(ctx context.Context) {
 				fmt.Printf("\r")
 				i = -1
 			}
+			time.Sleep(time.Second / 4)
 		}
 	}
 }
