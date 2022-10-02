@@ -35,7 +35,7 @@ var UserConfigChanged bool = false
 var UseVPN bool = false
 
 //版本号
-var Version string = "v1.6.0"
+var Version string = "v1.6.1"
 
 type Update struct {
 	LanzouUrl                 string //蓝奏云地址
