@@ -134,8 +134,12 @@ func getPostField(user model.UserInfo, client *http.Client) (url.Values, error) 
 	}
 	for rematch != nil {
 		if rematch.GroupByNumber(3).String() != "" {
-			//固定值
-			parame.Add(rematch.GroupByNumber(2).String(), rematch.GroupByNumber(4).String())
+			if rematch.GroupByNumber(2).String() == "hcode" && parame.Has("hcode") {
+
+			} else {
+				//固定值
+				parame.Add(rematch.GroupByNumber(2).String(), rematch.GroupByNumber(4).String())
+			}
 		} else if rematch.GroupByNumber(1).String() == "select" {
 			//默认选否
 			parame.Add(rematch.GroupByNumber(2).String(), "否")
