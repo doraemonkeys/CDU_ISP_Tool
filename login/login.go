@@ -143,7 +143,7 @@ func Get_Login_Page(client *http.Client, user model.UserInfo) ([]byte, error) {
 	if err != nil {
 		fmt.Println("访问ISP登录界面失败！", err)
 		//将页面内容写入到文件用于debug
-		os.WriteFile("loginError.html", content, 0644)
+		go os.WriteFile("loginError.html", content, 0644)
 		return nil, err
 	}
 	return content, nil

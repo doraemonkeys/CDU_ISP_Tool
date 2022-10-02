@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -54,8 +55,8 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 
 	resp4, err := client.Do(req4)
 	if err != nil {
-		log.Println("发起ISP登记请求失败！可能是ISP结构发生变化，请联系开发者。", err)
-		fmt.Println("发起ISP登记请求失败！可能是ISP结构发生变化，请联系开发者。", err)
+		log.Println("发起ISP登记请求失败！", err)
+		fmt.Println("发起ISP登记请求失败！", err)
 		return err
 	}
 	content4, err := io.ReadAll(resp4.Body)
@@ -70,6 +71,7 @@ func ISP_CheckIn(client *http.Client, user model.UserInfo) error {
 	if match != nil {
 		return nil
 	}
+	go os.WriteFile("error.html", content4, 0666)
 	return errors.New("CDU-ISP 健康登记打卡 失败")
 }
 
