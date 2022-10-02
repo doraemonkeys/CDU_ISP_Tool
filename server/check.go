@@ -4,6 +4,7 @@ import (
 	"ISP_Tool/model"
 	"ISP_Tool/utils"
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -130,12 +131,17 @@ func CheckUpdate() {
 	//有更新
 	color.Yellow("检测到新版本 %s,正在尝试更新...", updateInfo.MainProgramVersion)
 	log.Println("检测到新版本", updateInfo.MainProgramVersion, ",正在尝试更新!")
+	ctx, cancel := context.WithCancel(context.Background())
+	go utils.WaitAnimation(ctx)
 	err = Update(updateInfo)
+	cancel()
+	fmt.Println()
 	if err == nil {
 		log.Println("更新成功！")
 		color.Green("更新成功！程序即将退出！")
 		os.Exit(0)
 	}
+	color.Red(err.Error())
 }
 
 func Update(updateInfo model.Update) error {
@@ -157,15 +163,13 @@ func updateAndRestart(tempName string) error {
 	path, err := utils.GetCurrentPath()
 	if err != nil {
 		log.Println("获取当前路径失败！", err)
-		color.Red("获取当前路径失败！")
-		return err
+		return fmt.Errorf("获取当前路径失败,%w", err)
 	}
 	//获取文件的绝对路径
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		log.Println("获取当前路径失败！", err)
-		color.Red("获取当前路径失败！")
-		return err
+		return fmt.Errorf("获取当前路径失败,%w", err)
 	}
 	absPath = filepath.Dir(absPath)
 	programName := filepath.Base(path)
@@ -181,25 +185,22 @@ func updateAndRestart(tempName string) error {
 	f, err := os.Create(batFile)
 	if err != nil {
 		log.Println("创建批处理文件失败！", err)
-		color.Red("创建批处理文件失败！")
-		return err
+		return fmt.Errorf("创建批处理文件失败,%w", err)
 	}
 	_, err = f.WriteString(`if "%1" == "h" goto begin
 	mshta vbscript:createobject("wscript.shell").run("""%~nx0"" h",0)(window.close)&&exit
 	:begin` + "\n")
 	if err != nil {
 		log.Println("写入批处理文件失败！", err)
-		color.Red("写入批处理文件失败！")
-		return err
+		return fmt.Errorf("写入批处理文件失败,%w", err)
 	}
 	f.WriteString("ping -n 2 127.1>nul" + " & " + cmd1 + " & " + cmd2 + " & " + cmd3 + " & " + cmd4)
 	f.Close()
 	cmdStr := "cmd /c start .\\" + batFile
 	err = utils.CmdNoOutput(absPath, []string{cmdStr, "&", "exit"})
 	if err != nil {
-		log.Println("更新失败！", err)
-		color.Red("更新失败！")
-		return err
+		log.Println("执行cmd命令失败！", err)
+		return fmt.Errorf("执行cmd命令失败,%w", err)
 	}
 	return nil
 }
@@ -208,14 +209,12 @@ func checkFile(tempName string, updateInfo model.Update) error {
 	md5, err := utils.GetFileMd5(tempName)
 	if err != nil {
 		log.Println("获取更新文件MD5失败！", err)
-		color.Red("获取更新文件MD5失败！")
-		return err
+		return fmt.Errorf("获取更新文件MD5失败,%w", err)
 	}
 	md5 = strings.ToUpper(md5)
 	updateInfo.MainProgramMd5 = strings.ToUpper(updateInfo.MainProgramMd5)
 	if md5 != updateInfo.MainProgramMd5 {
 		log.Println("更新文件MD5校验失败！")
-		color.Red("更新文件MD5校验失败！")
 		return errors.New("更新文件MD5校验失败")
 	}
 	return nil
@@ -227,22 +226,19 @@ func downloadUpdate(updateInfo model.Update) (string, error) {
 		err := utils.DownloadFile(updateInfo.MainProgramDirectUrl, tempName)
 		if err != nil {
 			log.Println("下载更新文件失败！", err)
-			color.Red("下载更新文件失败！")
-			return "", err
+			return "", fmt.Errorf("下载更新文件失败,%w", err)
 		}
 	}
 	if updateInfo.MainProgramDirectUrl == "" {
 		directUrl, err := lanzou.GetDownloadUrl(updateInfo.LanzouUrl, updateInfo.LanzouPwd, updateInfo.MainProgramName)
 		if err != nil {
 			log.Println("获取更新文件下载地址失败！", err)
-			color.Red("获取更新文件下载地址失败！")
-			return "", err
+			return "", fmt.Errorf("获取更新文件下载地址失败,%w", err)
 		}
 		err = lanzou.Download(directUrl, tempName)
 		if err != nil {
 			log.Println("下载更新文件失败！", err)
-			color.Red("下载更新文件失败！")
-			return "", err
+			return "", fmt.Errorf("下载更新文件失败,%w", err)
 		}
 	}
 	return tempName, nil
