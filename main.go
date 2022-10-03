@@ -43,7 +43,7 @@ func main() {
 		showAutoStartStatus()
 		fmt.Println()
 
-		view.EndSlect()
+		view.EndSelect()
 		ok := controller.ProcessEndInput()
 		if !ok {
 			return

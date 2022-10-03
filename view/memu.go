@@ -82,7 +82,7 @@ func Auto_Clock_IN_Success() {
 // 	fmt.Println("请选择 【0 - 5】:")
 // }
 
-func EndSlect() {
+func EndSelect() {
 	attributes := [4]color.Attribute{}
 	attributes[1] = color.FgRed
 	utils.ColorPrint(attributes[:], "[", "0", "]  删除一个账号\n")
