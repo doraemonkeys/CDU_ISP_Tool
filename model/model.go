@@ -22,19 +22,19 @@ const UserAgent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleW
 
 // const Today_statusRe string = `主动登记[^主]+主动登记`
 
-//程序已经设置自启动
+// 程序已经设置自启动
 var Auto_Start bool = false
 
-//程序启动前今天的打卡已经完成
+// 程序启动前今天的打卡已经完成
 var Auto_Clock_IN_Success bool = false
 
-//用户是否使用本程序修改了用户账号配置
+// 用户是否使用本程序修改了用户账号配置
 var UserConfigChanged bool = false
 
-//是否使用了VPN
+// 是否使用了VPN
 var UseVPN bool = false
 
-//版本号
+// 版本号
 var Version string = "v1.6.1"
 
 type Update struct {
@@ -50,7 +50,7 @@ type Update struct {
 	MainProgramMd5            string //主程序md5
 }
 
-//全局配置
+// 全局配置
 var All = AllMsg{}
 
 type Header struct {
@@ -89,7 +89,7 @@ type Location struct {
 	Area     string
 }
 
-//key-value
+// key-value
 type FieldAndValue struct {
 	Field string
 	Value string
