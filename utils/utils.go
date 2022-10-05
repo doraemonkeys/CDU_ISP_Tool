@@ -60,13 +60,18 @@ func Get_client() (http.Client, error) {
 
 // 获取当前的执行路径(包含可执行文件名称)
 // C:\Users\*\AppData\Local\Temp\*\exe\main.exe
-// (读取命令行的方式，可能得不到想要的路径)
+// (读取命令行的方式，可能得不到想要的路径，弃用)
 func GetCurrentPath() (string, error) {
 	s, err := exec.LookPath(os.Args[0])
 	if err != nil {
 		return "", err
 	}
 	return strings.TrimSpace(s), nil
+}
+
+// 获取当前程序所在的绝对路径+文件名
+func GetExecutionPath() (string, error) {
+	return os.Executable()
 }
 
 // 获取当前文件的详细路径
@@ -271,34 +276,6 @@ func GetUpdateInfo() (model.Update, error) {
 	return update, nil
 }
 
-// filename为文件存储的路径(可省略)和文件名,记得校验md5
-func DownloadFile(url string, filename string) error {
-	request, err := http.NewRequest("GET", url, nil)
-	request.Header.Set("user-agent", model.UserAgent)
-	if err != nil {
-		return err
-	}
-	resp, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return fmt.Errorf("访问url失败,err:%w", err)
-	}
-	defer resp.Body.Close()
-	// 创建一个文件用于保存
-	out, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	//io.Copy() 方法将副本从 src 复制到 dst ，直到 src 达到文件末尾 ( EOF ) 或发生错误，
-	//然后返回复制的字节数和复制时遇到的第一个错误(如果有)。
-	//将响应流和文件流对接起来
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // 获取文件md5(字母小写)
 func GetFileMd5(filename string) (string, error) {
 	file, err := os.Open(filename)
@@ -343,28 +320,44 @@ func CmdNoOutput(dir string, params []string) error {
 
 // 等待动画(用完记得换行+'\n')
 func WaitAnimation(ctx context.Context) {
-	n := 100
+	fmt.Print("[")
+	n := 80
 	for i := 0; i < n; i++ {
 		fmt.Printf("%s", "-")
 	}
+	fmt.Print("]")
 	//光标回到第一行
-	fmt.Printf("\r")
+	fmt.Printf("\r[")
 	attributes := []color.Attribute{color.FgGreen}
 	for i := 0; i < n; i++ {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			ColorPrint(attributes, ">")
+			if i == 0 {
+				fmt.Printf(">")
+			} else {
+				fmt.Print("\b")
+				ColorPrint(attributes, "=")
+				fmt.Printf(">")
+			}
 			if i == n-1 {
 				fmt.Printf("\r")
+				fmt.Print("[")
 				for i := 0; i < n; i++ {
 					fmt.Printf("%s", "-")
 				}
-				fmt.Printf("\r")
+				fmt.Print("]")
+				fmt.Printf("\r[")
 				i = -1
 			}
-			time.Sleep(time.Second / 4)
+			if i < 10 {
+				time.Sleep(time.Second / 10)
+			} else if i > n-10 {
+				time.Sleep(time.Second)
+			} else {
+				time.Sleep(time.Second / 4)
+			}
 		}
 	}
 }

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	pd "github.com/Doraemonkeys/ParallelDownload"
 	"github.com/Doraemonkeys/lanzou"
 	"github.com/fatih/color"
 )
@@ -159,8 +160,8 @@ func Update(updateInfo model.Update) error {
 }
 
 func updateAndRestart(tempName string) error {
-	//获取文件路径
-	path, err := utils.GetCurrentPath()
+	//获取程序路径
+	path, err := utils.GetExecutionPath()
 	if err != nil {
 		log.Println("获取当前路径失败！", err)
 		return fmt.Errorf("获取当前路径失败,%w", err)
@@ -223,7 +224,7 @@ func checkFile(tempName string, updateInfo model.Update) error {
 func downloadUpdate(updateInfo model.Update) (string, error) {
 	tempName := "temp"
 	if updateInfo.MainProgramDirectUrl != "" {
-		err := utils.DownloadFile(updateInfo.MainProgramDirectUrl, tempName)
+		err := pd.ParallelDownload(updateInfo.MainProgramDirectUrl, tempName, 3)
 		if err != nil {
 			log.Println("下载更新文件失败！", err)
 			return "", fmt.Errorf("下载更新文件失败,%w", err)
@@ -235,7 +236,10 @@ func downloadUpdate(updateInfo model.Update) (string, error) {
 			log.Println("获取更新文件下载地址失败！", err)
 			return "", fmt.Errorf("获取更新文件下载地址失败,%w", err)
 		}
-		err = lanzou.Download(directUrl, tempName)
+		err = pd.ParallelDownload(directUrl, tempName, 5)
+		if err != nil {
+			err = lanzou.Download(directUrl, tempName)
+		}
 		if err != nil {
 			log.Println("下载更新文件失败！", err)
 			return "", fmt.Errorf("下载更新文件失败,%w", err)
