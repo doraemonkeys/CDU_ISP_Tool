@@ -15,8 +15,8 @@ type StudentInfo struct {
 	Name string
 	Age  int
 	//身份证号
-	IdCard     string
-	SchoolInfo StudentSchoolInfo
+	IdCard string
+	StudentSchoolInfo
 	CurrentLocation
 }
 

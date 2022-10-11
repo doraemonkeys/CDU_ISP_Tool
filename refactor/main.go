@@ -10,7 +10,7 @@ func main() {
 	var stu1 = CDU_ISP.CDU_CheckInStudent{}
 	stu1.Name = "张三"
 	stu1.Age = 18
-	stu1.SchoolInfo.StudentId = "201800000000"
+	stu1.StudentId = "201800000000"
 	isptool := CDU_ISP.ISP_Tool{
 		Stu:    &stu1,
 		Client: &http.Client{},
