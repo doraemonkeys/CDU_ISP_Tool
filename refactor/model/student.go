@@ -21,10 +21,11 @@ type StudentInfo struct {
 }
 
 type StudentSchoolInfo struct {
-	StudentId string //学号
-	Class     string
-	Year      int    //入学年份
-	Major     string //专业
+	University string
+	StudentId  string //学号
+	Class      string
+	Year       int    //入学年份
+	Major      string //专业
 }
 
 // 当前位置,省市区

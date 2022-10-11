@@ -2,17 +2,21 @@ package main
 
 import (
 	"CDU_Tool/CDU_ISP"
+	"CDU_Tool/checkIn"
 	"fmt"
 	"net/http"
 )
 
 func main() {
-	var stu1 = CDU_ISP.CDU_CheckInStudent{}
-	stu1.Name = "张三"
-	stu1.Age = 18
-	stu1.StudentId = "201800000000"
+	stu := CDU_ISP.CDU_CheckInStudent{}
+	stu.Name = "张三"
+	stu.University = "Chengdu University"
+	stu.StudentId = "201800000000"
+	stu.VpnPwd = "123456"
+	stu.Age = 18
+	var stu1 checkIn.CheckInToolPerson = &stu
 	isptool := CDU_ISP.ISP_Tool{
-		Stu:    &stu1,
+		Stu:    &stu,
 		Client: &http.Client{},
 	}
 	err := stu1.UseCheckInTool(&isptool)
