@@ -10,6 +10,7 @@ import (
 type ISP_Tool struct {
 	Stu    *CDU_CheckInStudent
 	Client *http.Client
+	UseVPN bool //是否使用了VPN
 }
 
 // 迪米特法则，一个对象应该对其他对象有最少的了解(黑盒原则)
@@ -20,7 +21,7 @@ func (tool *ISP_Tool) login() error {
 
 // 实现层
 func (tool *ISP_Tool) CheckIn() error {
-	UseVPN := false
+	tool.UseVPN = false
 	err := tool.login()
 	if err != nil {
 		vpn_tool := CDU_VPN.VPN_Tool{
@@ -32,9 +33,9 @@ func (tool *ISP_Tool) CheckIn() error {
 			return err
 		}
 		tool.Client = client
-		UseVPN = true
+		tool.UseVPN = true
 	}
 	fmt.Println("打卡学生：", tool.Stu)
-	fmt.Println("是否使用VPN：", UseVPN)
+	fmt.Println("是否使用VPN：", tool.UseVPN)
 	return nil
 }
