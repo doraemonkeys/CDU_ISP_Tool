@@ -1,5 +1,11 @@
 package model
 
+type CDU_Student struct {
+	Student
+	ISP_Pwd string
+	VpnPwd  string
+}
+
 type Student struct {
 	StudentInfo
 }
@@ -19,8 +25,6 @@ type StudentSchoolInfo struct {
 	Class     string
 	Year      int    //入学年份
 	Major     string //专业
-	VpnPwd    string
-	ISP_Pwd   string
 }
 
 // 当前位置,省市区

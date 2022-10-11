@@ -1,3 +1,3 @@
-module isp_tool
+module CDU_Tool
 
 go 1.19
