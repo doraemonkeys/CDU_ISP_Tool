@@ -12,8 +12,8 @@ func main() {
 	stu1.Age = 18
 	stu1.SchoolInfo.StudentId = "201800000000"
 	isptool := CDU_ISP.ISP_Tool{
-		CDU_CheckInStudent: &stu1,
-		Client:             &http.Client{},
+		Stu:    &stu1,
+		Client: &http.Client{},
 	}
 	err := stu1.UseCheckInTool(&isptool)
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 )
 
 type VPN_Tool struct {
-	*VPN_Student
+	Stu    *VPN_Student
 	Client *http.Client
 }
 
