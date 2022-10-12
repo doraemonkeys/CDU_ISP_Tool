@@ -14,12 +14,13 @@ func main() {
 	stu.StudentId = "201800000000"
 	stu.VpnPwd = "123456"
 	stu.Age = 18
-	var stu1 checkIn.CheckInToolPerson = &stu
+
 	isptool := CDU_ISP.ISP_Tool{
 		Stu:    &stu,
 		Client: &http.Client{},
 	}
-	err := stu1.UseCheckInTool(&isptool)
+
+	err := checkIn.CheckIn(&stu, &isptool)
 	if err != nil {
 		fmt.Println(err)
 		return

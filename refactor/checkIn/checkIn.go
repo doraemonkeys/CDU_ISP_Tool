@@ -12,3 +12,9 @@ type CheckInTool interface {
 type CheckInToolPerson interface {
 	UseCheckInTool(tool CheckInTool) error
 }
+
+//基于抽象层对业务进行封装,实现架构层
+func CheckIn(p CheckInToolPerson, tool CheckInTool) error {
+	//通过接口来向下调用，(多态现象)，一个接口可以有多个实现
+	return p.UseCheckInTool(tool)
+}
