@@ -1,4 +1,4 @@
-package CDU_ISP
+package student
 
 import (
 	"CDU_Tool/checkIn"
@@ -14,7 +14,7 @@ type CDU_CheckInStudent struct {
 
 // 业务逻辑层，人使用工具
 func (cs *CDU_CheckInStudent) UseCheckInTool(tool checkIn.CheckInTool) error {
-	err := tool.CheckIn()
+	err := tool.CheckIn(cs)
 	if err != nil {
 		return err
 	}

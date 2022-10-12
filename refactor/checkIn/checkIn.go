@@ -5,7 +5,7 @@ package checkIn
 // 依赖倒置原则，依赖于抽象而不依赖于具体，依赖于接口而不依赖于实现。
 // 抽象层
 type CheckInTool interface {
-	CheckIn() error
+	CheckIn(CheckInToolPerson) error
 }
 
 // 业务逻辑层抽象
