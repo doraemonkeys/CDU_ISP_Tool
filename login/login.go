@@ -119,6 +119,7 @@ func Get_Login_Page(client *http.Client, user model.UserInfo) ([]byte, error) {
 		statusCode := 0
 		content, statusCode, err = Fetch_ISP_Login_Page(client)
 		log.Println("第", i, "次", "LoginPage status code:", statusCode)
+		//err = fmt.Errorf("test error")
 		if err != nil {
 			log.Println("访问ISP登录界面失败！尝试使用VPN登录", err)
 			fmt.Println("访问ISP登录界面失败,尝试使用VPN登录......")

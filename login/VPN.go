@@ -232,6 +232,7 @@ func getPost_URL_postData(client *http.Client, v string) (string, url.Values, er
 	return postUrl, postData, nil
 }
 
+// getISP_Port()会修改model.All.VPN_ISP_BaseURL,加上:port
 func getISP_Port(client *http.Client) (string, int, error) {
 	//get
 	request, err := http.NewRequest("GET", "https://vpn.cdu.edu.cn/por/conf.csp?apiversion=1", nil)
@@ -261,9 +262,9 @@ func getISP_Port(client *http.Client) (string, int, error) {
 	return port, resp.StatusCode, nil
 }
 
-func fetchISPByVPN(client *http.Client, port string) ([]byte, int, error) {
+func fetchISPByVPN(client *http.Client) ([]byte, int, error) {
 	//get http://xsswzx-cdu-edu-cn-s.vpn.cdu.edu.cn:8118/ispstu/com_user/weblogin.asp
-	request, err := http.NewRequest("GET", "http://xsswzx-cdu-edu-cn-s.vpn.cdu.edu.cn:"+port+"/ispstu/com_user/weblogin.asp", nil)
+	request, err := http.NewRequest("GET", model.All.VPN_ISP_BaseURL+model.All.Login.LoginWebUrl, nil)
 	if err != nil {
 		log.Println("创建请求失败", err)
 		return nil, 0, err
@@ -271,7 +272,7 @@ func fetchISPByVPN(client *http.Client, port string) ([]byte, int, error) {
 	resp, err := client.Do(request)
 	if err != nil {
 		log.Println("请求失败", err)
-		return nil, resp.StatusCode, err
+		return nil, 0, err
 	}
 	content, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -331,9 +332,9 @@ func Fetch_ISP_Login_Pag_VPN(client *http.Client, user model.UserInfo) ([]byte, 
 		}
 		return nil, 0, err
 	}
-	port, statusCode, err := getISP_Port(client)
+	_, statusCode, err := getISP_Port(client)
 	if err != nil {
 		return nil, statusCode, err
 	}
-	return fetchISPByVPN(client, port)
+	return fetchISPByVPN(client)
 }
