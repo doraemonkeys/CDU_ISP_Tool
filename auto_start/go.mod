@@ -3,7 +3,7 @@ module ispTool_auto_start
 go 1.18
 
 require (
-	github.com/Doraemonkeys/lanzou v0.0.0-20220908190937-4a79e068470a
+	github.com/Doraemonkeys/lanzou v0.0.0-20221124183254-62c3e7ade342
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/fatih/color v1.13.0
 	golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c
