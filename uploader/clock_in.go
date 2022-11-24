@@ -103,8 +103,8 @@ func getPostField(user model.UserInfo, client *http.Client) (url.Values, error) 
 	req.Header.Set("user-agent", model.UserAgent)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("访问ISP登记请求页面失败！可能是ISP结构发生变化，请联系开发者。", err)
-		fmt.Println("访问ISP登记请求页面失败！可能是ISP结构发生变化，请联系开发者。", err)
+		log.Println("访问ISP登记请求页面失败！可能是ISP结构发生变化。", err)
+		fmt.Println("访问ISP登记请求页面失败！可能是ISP结构发生变化。", err)
 		return nil, err
 	}
 	content, err := io.ReadAll(resp.Body)
@@ -215,8 +215,8 @@ func tryCancle(key_value model.FieldAndValue, client *http.Client) error {
 	request.Header.Set("user-agent", model.UserAgent)
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		log.Println("访问ISP页面失败，可能是ISP结构发生变化。")
+		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化。")
 		return err
 	}
 	content, err := io.ReadAll(resp.Body)

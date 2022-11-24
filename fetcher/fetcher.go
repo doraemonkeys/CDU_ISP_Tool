@@ -44,8 +44,8 @@ func CheckingAnomalies(user model.UserInfo, client *http.Client) (model.FieldAnd
 	request.Header.Set("user-agent", model.UserAgent)
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		log.Println("访问ISP页面失败，可能是ISP结构发生变化。")
+		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化。")
 		return model.FieldAndValue{}, err
 	}
 	content, err := ioutil.ReadAll(resp.Body)
@@ -59,7 +59,7 @@ func CheckingAnomalies(user model.UserInfo, client *http.Client) (model.FieldAnd
 	re2 := regexp.MustCompile(model.All.Regexp.Clock_IN_ID_Re)
 	match2 := re2.FindSubmatch(content)
 	if len(match2) != 3 {
-		log.Println("获取撤回打卡key-value字段失败,可能是ISP结构发生变化，请联系开发者。")
+		log.Println("获取撤回打卡key-value字段失败,可能是ISP结构发生变化。")
 	} else {
 		key_value.Field = string(match2[1])
 		key_value.Value = string(match2[2])
@@ -94,8 +94,8 @@ func Get_User_Nonce(client *http.Client) (string, error) {
 
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化，请联系开发者。")
+		log.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化。")
+		fmt.Println("访问ISP主页(webindex.asp)失败，可能是ISP结构发生变化。")
 	}
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -107,8 +107,8 @@ func Get_User_Nonce(client *http.Client) (string, error) {
 	match := re.FindSubmatch(content)
 	var user_no string
 	if match == nil {
-		log.Println("访问ISP主页寻找用户标识码失败，可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("访问ISP主页寻找用户标识码失败，可能是ISP结构发生变化，请联系开发者。")
+		log.Println("访问ISP主页寻找用户标识码失败，可能是ISP结构发生变化。")
+		fmt.Println("访问ISP主页寻找用户标识码失败，可能是ISP结构发生变化。")
 		return "", errors.New("match == nil")
 	}
 	user_no = string(match[1])
@@ -118,8 +118,8 @@ func Get_User_Nonce(client *http.Client) (string, error) {
 func Get_IP_Loaction() (model.Location, error) {
 	client, err := utils.Get_client()
 	if err != nil {
-		log.Println("程序初始化client失败，请联系开发者。", err)
-		fmt.Println("程序初始化client失败，请联系开发者。", err)
+		log.Println("程序初始化client失败。", err)
+		fmt.Println("程序初始化client失败。", err)
 		return model.Location{}, err
 	}
 	apiUrl := "https://www.ip138.com/iplookup.asp"
@@ -152,8 +152,8 @@ func Get_IP_Loaction() (model.Location, error) {
 	//自动检测html编码
 	e, err := utils.DetermineEncodingbyPeek(bodyReader)
 	if err != nil {
-		log.Println("检测html编失败，请联系开发者。", err)
-		fmt.Println("检测html编失败，请联系开发者。", err)
+		log.Println("检测html编失败。", err)
+		fmt.Println("检测html编失败。", err)
 		return model.Location{}, err
 	}
 	//转码utf-8
@@ -173,16 +173,16 @@ func find_IP_Loaction_From_html(content []byte) (model.Location, error) {
 	re := regexp.MustCompile(model.All.Regexp.Ip_locationRe)
 	match := re.FindAllSubmatch(content, -1)
 	if match == nil {
-		log.Println("匹配IP地址信息失败！请联系开发者。")
-		fmt.Println("匹配IP地址信息失败！请联系开发者。")
+		log.Println("匹配IP地址信息失败！。")
+		fmt.Println("匹配IP地址信息失败！。")
 		return model.Location{}, errors.New("match == nil")
 	}
 	re2 := regexp.MustCompile(model.All.Regexp.ASN_Home)
 	match2 := re2.Find(content)
 	for _, oneMatch := range match {
 		if len(oneMatch) != 5 {
-			log.Println("匹配IP地址信息失败！请联系开发者。")
-			fmt.Println("匹配IP地址信息失败！请联系开发者。")
+			log.Println("匹配IP地址信息失败！。")
+			fmt.Println("匹配IP地址信息失败！。")
 			return model.Location{}, errors.New("len(match) != 5")
 		}
 		//如果匹配到的区域是不在ans归属地中,则查看下一条匹配
@@ -222,8 +222,8 @@ func Get_isp_location_history(user_no string, client *http.Client) (model.Locati
 	request.Header.Set("user-agent", model.UserAgent)
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化，请联系开发者。")
+		log.Println("访问ISP页面失败，可能是ISP结构发生变化。")
+		fmt.Println("访问ISP页面失败，可能是ISP结构发生变化。")
 		return model.Location{}, err
 	}
 	content, err := ioutil.ReadAll(resp.Body)
@@ -235,8 +235,8 @@ func Get_isp_location_history(user_no string, client *http.Client) (model.Locati
 	re := regexp.MustCompile(model.All.Regexp.Isp_history_location_Re)
 	match := re.FindSubmatch(content)
 	if match == nil {
-		log.Println("匹配ISP历史登记地址信息失败！可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("匹配ISP历史登记地址信息失败！可能是ISP结构发生变化，请联系开发者。")
+		log.Println("匹配ISP历史登记地址信息失败！可能是ISP结构发生变化。")
+		fmt.Println("匹配ISP历史登记地址信息失败！可能是ISP结构发生变化。")
 		return model.Location{}, err
 	}
 	newLocation := model.Location{}

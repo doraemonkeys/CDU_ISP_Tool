@@ -65,16 +65,16 @@ func LoginISP(client *http.Client, user model.UserInfo) error {
 	// 发起登录请求
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Println("发起ISP登录请求失败！可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("发起ISP登录请求失败！可能是ISP结构发生变化，请联系开发者。")
+		log.Println("发起ISP登录请求失败！可能是ISP结构发生变化。")
+		fmt.Println("发起ISP登录请求失败！可能是ISP结构发生变化。")
 		return err
 	}
 	bodyReader := bufio.NewReader(resp.Body)
 	//自动检测html编码
 	e, err := utils.DetermineEncodingbyPeek(bodyReader)
 	if err != nil {
-		log.Println("登录返回界面检测html编失败，请联系开发者。", err)
-		fmt.Println("登录返回界面检测html编失败，请联系开发者。", err)
+		log.Println("登录返回界面检测html编失败。", err)
+		fmt.Println("登录返回界面检测html编失败。", err)
 		return err
 	}
 	//转码utf-8

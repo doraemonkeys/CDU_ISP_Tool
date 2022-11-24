@@ -19,8 +19,8 @@ func Get_ISP_Login_code(content []byte) (string, error) {
 	re := regexp.MustCompile(model.All.Regexp.VerificationCodeRe)
 	substr := re.FindSubmatch(content)
 	if substr == nil {
-		log.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
-		fmt.Println("获取登录验证码失败！可能是ISP结构发生变化，请联系开发者。")
+		log.Println("获取登录验证码失败！可能是ISP结构发生变化。")
+		fmt.Println("获取登录验证码失败！可能是ISP结构发生变化。")
 		return "", errors.New("substr == nil")
 	}
 	return string(substr[1]), nil
