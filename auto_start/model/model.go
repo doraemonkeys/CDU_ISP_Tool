@@ -1,7 +1,7 @@
 package model
 
 //版本号,与主版本号不相同
-var Version string = "1.0.3"
+var Version string = "1.0.4"
 
 type Update struct {
 	LanzouUrl                 string //蓝奏云地址
