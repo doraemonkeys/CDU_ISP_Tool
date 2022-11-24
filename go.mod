@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/Doraemonkeys/ParallelDownload v0.0.0-20221005053753-20762f713737
-	github.com/Doraemonkeys/lanzou v0.0.0-20221004165300-cd85dedf0286
+	github.com/Doraemonkeys/lanzou v0.0.0-20221124183254-62c3e7ade342
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/dop251/goja v0.0.0-20220927172339-ea66e911853d

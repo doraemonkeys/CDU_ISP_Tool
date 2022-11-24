@@ -2,6 +2,8 @@ github.com/Doraemonkeys/ParallelDownload v0.0.0-20221005053753-20762f713737 h1:H
 github.com/Doraemonkeys/ParallelDownload v0.0.0-20221005053753-20762f713737/go.mod h1:KFodr6hU2mQpcWalSN2Jk/kpJJ/y878k+KzFUk2NbrM=
 github.com/Doraemonkeys/lanzou v0.0.0-20221004165300-cd85dedf0286 h1:EuIk50pqlQsSCUx9RAsvAxvq1Hl3DFqacvUGE2WDiOE=
 github.com/Doraemonkeys/lanzou v0.0.0-20221004165300-cd85dedf0286/go.mod h1:cJ93o3Fsp5Fbgu1kNfgO5jYL875xDuAYKqyD5KcJ1ic=
+github.com/Doraemonkeys/lanzou v0.0.0-20221124183254-62c3e7ade342 h1:syskjmEvyjy3HvtbGzsM/rDMfg2gJ/rOmNaE/0uoszM=
+github.com/Doraemonkeys/lanzou v0.0.0-20221124183254-62c3e7ade342/go.mod h1:cJ93o3Fsp5Fbgu1kNfgO5jYL875xDuAYKqyD5KcJ1ic=
 github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 h1:OYA+5W64v3OgClL+IrOD63t4i/RW7RqrAVl9LTZ9UqQ=
 github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394/go.mod h1:Q8n74mJTIgjX4RBBcHnJ05h//6/k6foqmgE45jTQtxg=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
