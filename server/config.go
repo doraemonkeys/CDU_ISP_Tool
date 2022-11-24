@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -144,8 +145,15 @@ func GetConfig() error {
 }
 
 func SetAutoStart() error {
-	startPath := `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs`
-	file, err := os.OpenFile(startPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
+	// C:\Users\*\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+	// 获取当前Windows用户的home directory.
+	winUserHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Println("获取当前Windows用户的用户名失败，Error:", err)
+		return err
+	}
+	startFile := winUserHomeDir + `\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup` + `\isp_auto_start.vbs`
+	file, err := os.OpenFile(startFile, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
 	if err != nil {
 		log.Println("创建或打开文件失败!", err)
 		return err
@@ -185,34 +193,74 @@ func SetAutoStart() error {
 		log.Println("写入自启动配置文件失败！", err)
 		return err
 	}
-	err = StartNewProgram()
+	err = StartNewProgram(startFile)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// 用户设置自启动后会关闭当前程序，开启一个守护进程，
+// 用户设置自启动后会关闭当前程序，延迟几秒开启一个守护进程，
 // 应当确保在设置自启动后调用。
-func StartNewProgram() error {
-	//延迟几秒打开一个新进程,不等cmd执行完毕就返回
-	_, err := utils.Cmd_NoWait(`C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup`,
-		[]string{"ping -n 5 127.1>nul", "&", ".\\isp_auto_start.vbs"})
+// startPath为自启动脚本的路径+文件名。
+// 主体思路是：在当前目录下创建bat文件，bat文件中延迟几秒调用vbs脚本。
+func StartNewProgram(startFile string) error {
+	//获取程序路径
+	path, err := utils.GetExecutionPath()
 	if err != nil {
-		log.Println("打开新的程序失败！", err)
-		return err
+		log.Println("获取当前路径失败！", err)
+		return fmt.Errorf("获取当前路径失败,%w", err)
+	}
+	//获取文件的绝对路径
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		log.Println("获取当前路径失败！", err)
+		return fmt.Errorf("获取当前路径失败,%w", err)
+	}
+	absPath = filepath.Dir(absPath)
+	//fmt.Println(absPath) //调试用
+	batFile := `startVBS.bat`
+	//命令1
+	cmd1 := "cmd /c " + `"` + startFile + `"`
+	//命令2
+	cmd2 := "del " + batFile
+	f, err := os.Create(absPath + `\` + batFile)
+	if err != nil {
+		log.Println("创建批处理文件失败！", err)
+		return fmt.Errorf("创建批处理文件失败,%w", err)
+	}
+	_, err = f.WriteString(`if "%1" == "h" goto begin
+	mshta vbscript:createobject("wscript.shell").run("""%~nx0"" h",0)(window.close)&&exit
+	:begin` + "\n")
+	if err != nil {
+		log.Println("写入批处理文件失败！", err)
+		return fmt.Errorf("写入批处理文件失败,%w", err)
+	}
+	f.WriteString("ping -n 3 127.1>nul" + " & " + cmd1 + " & " + cmd2)
+	f.Close()
+	cmdStr := "cmd /c " + `"` + absPath + `\` + batFile + `"`
+	err = utils.CmdNoOutput(absPath, []string{cmdStr, "&", "exit"})
+	if err != nil {
+		log.Println("执行cmd命令失败！", err)
+		return fmt.Errorf("执行cmd命令失败,%w", err)
 	}
 	return nil
 }
 
 func CancelAutoStart() error {
-	startPath := `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs`
-	file, err := os.OpenFile(startPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
+	// C:\Users\*\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+	// 获取当前Windows用户的home directory.
+	winUserHomeDir, err := os.UserHomeDir()
 	if err != nil {
-		log.Println("创建或打开文件失败!", err)
+		log.Println("获取当前Windows用户的用户名失败，Error:", err)
 		return err
 	}
-	defer file.Close()
+	startFile := winUserHomeDir + `\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup` + `\isp_auto_start.vbs`
+	err = os.Remove(startFile)
+	if err != nil {
+		log.Println("删除自启动脚本失败！", err)
+		return err
+	}
 	start_config, err := os.OpenFile("./config/auto_start.config", os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		log.Println("创建或打开自启动配置文件失败!", err)

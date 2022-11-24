@@ -115,23 +115,13 @@ func Get_Login_Page(client *http.Client, user model.UserInfo) ([]byte, error) {
 	maxTry := 3
 	var content []byte
 	var err error
+	statusCode := 0
 	for i := 0; i < maxTry; i++ {
-		statusCode := 0
 		content, statusCode, err = Fetch_ISP_Login_Page(client)
 		log.Println("第", i, "次", "LoginPage status code:", statusCode)
-		//err = fmt.Errorf("test error")
 		if err != nil {
-			log.Println("访问ISP登录界面失败！尝试使用VPN登录", err)
-			fmt.Println("访问ISP登录界面失败,尝试使用VPN登录......")
-			//使用VPN登录
-			content, statusCode, err = Fetch_ISP_Login_Pag_VPN(client, user)
-			if err != nil {
-				log.Println("VPN登录失败！", "code:", statusCode, "err:", err)
-				color.Red("VPN登录失败:%s", err.Error())
-				return nil, err
-			}
-			model.UseVPN = true
-			break
+			log.Println("访问ISP登录界面失败！", err)
+			continue
 		}
 		if len(content) < 20 { //或者 statusCode != 200
 			err = errors.New("len(content) too short")
@@ -141,11 +131,20 @@ func Get_Login_Page(client *http.Client, user model.UserInfo) ([]byte, error) {
 		}
 		break
 	}
+	//err = fmt.Errorf("test error")
 	if err != nil {
-		fmt.Println("访问ISP登录界面失败！", err)
 		//将页面内容写入到文件用于debug
 		go os.WriteFile("loginError.html", content, 0644)
-		return nil, err
+		log.Println("访问ISP登录界面失败！尝试使用VPN登录", err)
+		fmt.Println("访问ISP登录界面失败,尝试使用VPN登录......")
+		//使用VPN登录
+		content, statusCode, err = Fetch_ISP_Login_Pag_VPN(client, user)
+		if err != nil {
+			log.Println("VPN登录失败！", "code:", statusCode, "err:", err)
+			color.Red("VPN登录失败:%s", err.Error())
+			return nil, err
+		}
+		model.UseVPN = true
 	}
 	return content, nil
 }

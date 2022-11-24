@@ -12,7 +12,7 @@ import (
 	"github.com/fatih/color"
 )
 
-//打卡结束处理用户的输入,返回是否继续循环
+// 打卡结束处理用户的输入,返回是否继续循环
 func ProcessEndInput() bool {
 	var input string
 	for {
@@ -63,15 +63,13 @@ func ProcessEndInput() bool {
 			}
 		case "5":
 			fmt.Println()
-			fmt.Println(">>>>>如果设置失败，请关闭杀毒软件并以管理员权限重新运行<<<<<")
-			fmt.Println()
 			if model.Auto_Start {
 				err := server.CancelAutoStart()
 				if err != nil {
 					log.Println("关闭自启动失败！", err)
 					fmt.Println("关闭自启动失败！", err)
 				} else {
-					fmt.Println("关闭自启动成功！")
+					color.HiGreen("关闭自启动成功！")
 					log.Println("关闭自启动成功！")
 					model.Auto_Start = false
 				}

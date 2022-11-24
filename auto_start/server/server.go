@@ -17,7 +17,7 @@ import (
 	"github.com/fatih/color"
 )
 
-//启动打卡程序主体
+// 启动打卡程序主体
 func StartNewProgram() error {
 	path, err := utils.GetCurrentPath()
 	if err != nil {
@@ -38,7 +38,7 @@ func StartNewProgram() error {
 	return nil
 }
 
-//检查用户信息配置文件是否存在
+// 检查用户信息配置文件是否存在
 func ConfigFileExist() bool {
 	config, err := os.Open("./配置文件.config")
 	//检查文件是否为空
@@ -63,7 +63,7 @@ func ConfigFileExist() bool {
 	return false
 }
 
-//是否已经设置为自启动
+// 是否已经设置为自启动
 func CheckAutoStart() bool {
 	autoStart, err := os.Open("./auto_start.config")
 	if err != nil {
@@ -97,7 +97,7 @@ func CheckAutoStart() bool {
 	return false
 }
 
-//今日自动打卡是否成功,请确保auto_start.config文件存在
+// 今日自动打卡是否成功,请确保auto_start.config文件存在
 func TodayClockInSuccess() bool {
 	clockInInfo, err := utils.ReverseRead("./auto_start.config", 2)
 	if err != nil {
@@ -114,7 +114,7 @@ func TodayClockInSuccess() bool {
 	return clockInInfo[0] == time.Now().Format("2006/01/02")+" 自动打卡成功"
 }
 
-//今日自动打卡失败次数
+// 今日自动打卡失败次数
 func FailedTimes() (int, error) {
 	count := 0
 	for i := 1; ; i++ {
@@ -146,7 +146,7 @@ func FailedTimes() (int, error) {
 	}
 }
 
-//检查是否有更新,有更新则直接更新
+// 检查是否有更新,有更新则直接更新
 func CheckUpdate() {
 	//删除旧的更新文件
 	os.Remove("./update.bat")
@@ -200,12 +200,19 @@ func updateAndRestart(tempName string) error {
 	absPath = filepath.Dir(absPath)
 	//absPath = strings.Replace(absPath, "\\", "/", -1)
 	programName := filepath.Base(path)
+	// 获取当前Windows用户的home directory.
+	winUserHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Println("获取当前Windows用户的用户名失败，Error:", err)
+		return err
+	}
+	startPath := winUserHomeDir + `\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup`
 	//命令1
 	cmd1 := "del " + programName
 	//命令2
 	cmd2 := "rename " + tempName + " " + programName
 	//命令3
-	cmd3 := "cmd /c " + `"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\isp_auto_start.vbs"`
+	cmd3 := "cmd /c " + `"` + startPath + `\isp_auto_start.vbs` + `"`
 	batFile := "update.bat"
 	//命令4
 	cmd4 := "del " + batFile
