@@ -29,7 +29,7 @@ import (
 	"golang.org/x/text/transform"
 )
 
-//自动检测html编码,不会减少缓冲器的内容
+// 自动检测html编码,不会减少缓冲器的内容
 func DetermineEncodingbyPeek(r *bufio.Reader) (encoding.Encoding, error) {
 	tempbytes, err := r.Peek(1024)
 	if err != nil {
@@ -57,17 +57,6 @@ func Get_client() (http.Client, error) {
 	return http.Client{Jar: jar}, nil
 }
 
-//获取当前的执行路径(包含可执行文件名称)
-//C:\Users\*\AppData\Local\Temp\*\exe\main.exe
-//(读取命令行的方式，可能得不到想要的路径)
-func GetCurrentPath() (string, error) {
-	s, err := exec.LookPath(os.Args[0])
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(s), nil
-}
-
 func NetWorkStatus() bool {
 	timeout := time.Duration(time.Second)
 	client := http.Client{
@@ -83,10 +72,10 @@ func NetWorkStatus() bool {
 	return true
 }
 
-//从文件末尾按行读取文件。
-//name:文件路径 lineNum:读取行数(超过文件行数则读取全文)。
-//最后一行为空也算读取了一行,会返回此行为空串,若全是空格也会原样返回。
-//返回的每一行都不包含换行符号。
+// 从文件末尾按行读取文件。
+// name:文件路径 lineNum:读取行数(超过文件行数则读取全文)。
+// 最后一行为空也算读取了一行,会返回此行为空串,若全是空格也会原样返回。
+// 返回的每一行都不包含换行符号。
 func ReverseRead(name string, lineNum uint) ([]string, error) {
 	//打开文件
 	file, err := os.Open(name)
@@ -135,8 +124,8 @@ func ReverseRead(name string, lineNum uint) ([]string, error) {
 	return buff, nil
 }
 
-//读取倒数第n行(n从1开始),
-//若n大于文件行数则返回错误io.EOF。
+// 读取倒数第n行(n从1开始),
+// 若n大于文件行数则返回错误io.EOF。
 func ReadStartWithLastLine(filename string, n int) (string, error) {
 	//打开文件
 	file, err := os.Open(filename)
@@ -198,9 +187,9 @@ func PressToContinue(ch chan bool) {
 	close(ch)
 }
 
-//不等待执行完毕就返回
-//如果params中有转义字符需要自己处理
-//dir为cmd命令执行的位置,传入空值则为默认路径
+// 不等待执行完毕就返回
+// 如果params中有转义字符需要自己处理
+// dir为cmd命令执行的位置,传入空值则为默认路径
 func Cmd_NoWait(dir string, params []string) (string, error) {
 	cmd := exec.Command("cmd")
 	cmd_in := bytes.NewBuffer(nil)
@@ -233,8 +222,8 @@ func GbkToUtf8(b []byte) []byte {
 	return d
 }
 
-//attributes描述了后面每个字符串的颜色属性，attributes与strs长度必须相同,
-//注意不要忘了带上空格和换行。
+// attributes描述了后面每个字符串的颜色属性，attributes与strs长度必须相同,
+// 注意不要忘了带上空格和换行。
 func ColorPrint(attributes []color.Attribute, strs ...string) {
 	for k, str := range strs {
 		if attributes[k] != 0 {
@@ -247,12 +236,12 @@ func ColorPrint(attributes []color.Attribute, strs ...string) {
 	}
 }
 
-//GB18030
+// GB18030
 func Utf8ToANSI(text string) string {
 	return mahonia.NewEncoder("GB18030").ConvertString(text)
 }
 
-//获取昨天的日期
+// 获取昨天的日期
 func GetYesterday() time.Time {
 	return time.Now().AddDate(0, 0, -1)
 }
@@ -276,7 +265,7 @@ func GetUpdateInfo() (model.Update, error) {
 	return update, nil
 }
 
-//不会对内容转码
+// 不会对内容转码
 func Fetch(url string) ([]byte, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -326,7 +315,7 @@ func DownloadFile(url string, filename string) error {
 	return nil
 }
 
-//获取文件md5(字母小写)
+// 获取文件md5(字母小写)
 func GetFileMd5(filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -345,7 +334,7 @@ func GetFileMd5(filename string) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
-//比较两个版本号(格式为v1.0.0)v1,v2的大小,如果v1>v2返回1，v1<v2返回-1，v1=v2返回0
+// 比较两个版本号(格式为v1.0.0)v1,v2的大小,如果v1>v2返回1，v1<v2返回-1，v1=v2返回0
 func CompareVersion(v1, v2 string) int {
 	v1 = strings.TrimPrefix(v1, "v")
 	v2 = strings.TrimPrefix(v2, "v")
@@ -365,7 +354,7 @@ func CompareVersion(v1, v2 string) int {
 	return 0
 }
 
-//等待执行完毕才返回,不反回输出
+// 等待执行完毕才返回,不反回输出
 func CmdNoOutput(dir string, params []string) error {
 	cmd := exec.Command("cmd")
 	cmd_in := bytes.NewBuffer(nil)

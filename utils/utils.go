@@ -58,17 +58,6 @@ func Get_client() (http.Client, error) {
 	return http.Client{Jar: jar}, nil
 }
 
-// 获取当前的执行路径(包含可执行文件名称)
-// C:\Users\*\AppData\Local\Temp\*\exe\main.exe
-// (读取命令行的方式，可能得不到想要的路径，弃用)
-func GetCurrentPath() (string, error) {
-	s, err := exec.LookPath(os.Args[0])
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(s), nil
-}
-
 // 获取当前程序所在的绝对路径+文件名
 func GetExecutionPath() (string, error) {
 	return os.Executable()

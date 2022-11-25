@@ -23,3 +23,5 @@
 *.pdf
 .idea/*
 *.work
+*.sum
+make.bat

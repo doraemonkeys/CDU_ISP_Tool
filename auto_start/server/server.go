@@ -19,7 +19,7 @@ import (
 
 // 启动打卡程序主体
 func StartNewProgram() error {
-	path, err := utils.GetCurrentPath()
+	path, err := os.Executable()
 	if err != nil {
 		log.Println("获取当前文件目录失败！", err)
 		return err
@@ -184,7 +184,7 @@ func Update(updateInfo model.Update) error {
 
 func updateAndRestart(tempName string) error {
 	//获取文件路径
-	path, err := utils.GetCurrentPath()
+	path, err := os.Executable()
 	if err != nil {
 		log.Println("获取当前路径失败！", err)
 		color.Red("获取当前路径失败！")

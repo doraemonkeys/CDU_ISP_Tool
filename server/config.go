@@ -159,13 +159,11 @@ func SetAutoStart() error {
 		return err
 	}
 	defer file.Close()
-	path, err := utils.GetCurrentPath()
+	path, err := os.Getwd()
 	if err != nil {
 		log.Println("获取当前文件目录失败！", err)
 		return err
 	}
-	lastIndex := strings.LastIndex(path, "\\")
-	path = path[:lastIndex]
 	path = strings.Replace(path, `\`, `\\`, -1)
 	_, err = file.WriteString(utils.Utf8ToANSI(`Set objShell = CreateObject("WScript.Shell")` + "\n"))
 	if err != nil {
@@ -238,7 +236,8 @@ func StartNewProgram(startFile string) error {
 	}
 	f.WriteString("ping -n 3 127.1>nul" + " & " + cmd1 + " & " + cmd2)
 	f.Close()
-	cmdStr := "cmd /c " + `"` + absPath + `\` + batFile + `"`
+	cmdStr := "cmd /c " + `".\` + batFile + `"`
+	//执行批处理文件
 	err = utils.CmdNoOutput(absPath, []string{cmdStr, "&", "exit"})
 	if err != nil {
 		log.Println("执行cmd命令失败！", err)
